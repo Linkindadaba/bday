@@ -1,5 +1,5 @@
 // Sikadev's 3D Birthday Universe - Core Engine
-// Three.js 3D Graphics + 3D Media Gallery + Web Audio Mic Blow + Live Event Countdown + WhatsApp Engine
+// Interactive 3D Orbit, Scroll to Rotate, 3D Media Showcase & Live Event Engine
 
 // ==========================================
 // 1. STATE & STORAGE
@@ -8,7 +8,6 @@ const SIKADEV_CONFIG = {
   name: "Sikadev",
   defaultPhone: localStorage.getItem("sikadev_phone") || "",
   adminPin: localStorage.getItem("sikadev_admin_pin") || "2026",
-  // Default target celebration: Tomorrow midnight or 24 hours ahead
   liveCelebrationTime: localStorage.getItem("sikadev_live_time") || getDefaultCelebrationTime()
 };
 
@@ -47,6 +46,13 @@ const DEFAULT_WISHES = [
     name: "Devon",
     message: "Happy Birthday to a real visionary! Drinks on me this weekend brother! 🍕",
     vibe: "🍕 Food on Me",
+    date: "Today"
+  },
+  {
+    id: 5,
+    name: "Kwame",
+    message: "May your algorithms be fast and your peace of mind unbroken! Keep lifting everyone around you! 🚀",
+    vibe: "👑 The GOAT",
     date: "Today"
   }
 ];
@@ -100,6 +106,9 @@ try {
   mediaItems = DEFAULT_MEDIA;
 }
 
+let activeCardIndex = 0;
+let autoSpinEnabled = true;
+
 // ==========================================
 // 2. THREE.JS 3D SCENE SETUP
 // ==========================================
@@ -108,7 +117,7 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x090a16, 0.022);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 4.5, 13);
+camera.position.set(0, 4.2, 13.5);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -118,14 +127,14 @@ renderer.toneMappingExposure = 1.25;
 container.appendChild(renderer.domElement);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xc084fc, 1.3);
+const dirLight = new THREE.DirectionalLight(0xc084fc, 1.4);
 dirLight.position.set(5, 12, 7);
 scene.add(dirLight);
 
-const blueRimLight = new THREE.DirectionalLight(0x38bdf8, 0.9);
+const blueRimLight = new THREE.DirectionalLight(0x38bdf8, 0.95);
 blueRimLight.position.set(-6, -2, -5);
 scene.add(blueRimLight);
 
@@ -136,21 +145,21 @@ scene.add(universeGroup);
 // ------------------------------------------
 // Procedural Starfield & Cosmic Dust
 // ------------------------------------------
-const starCount = 1300;
+const starCount = 1400;
 const starGeometry = new THREE.BufferGeometry();
 const starPositions = new Float32Array(starCount * 3);
 const starColors = new Float32Array(starCount * 3);
 
 const palette = [
-  new THREE.Color(0xa855f7), // Purple
-  new THREE.Color(0x38bdf8), // Cyan
-  new THREE.Color(0xfbbf24), // Gold
-  new THREE.Color(0xffffff)  // White
+  new THREE.Color(0xa855f7),
+  new THREE.Color(0x38bdf8),
+  new THREE.Color(0xfbbf24),
+  new THREE.Color(0xffffff)
 ];
 
 for (let i = 0; i < starCount; i++) {
   const i3 = i * 3;
-  const radius = 26 + Math.random() * 50;
+  const radius = 26 + Math.random() * 52;
   const theta = Math.random() * Math.PI * 2;
   const phi = Math.acos(2 * Math.random() - 1);
 
@@ -168,7 +177,7 @@ starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3
 starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
 const starMaterial = new THREE.PointsMaterial({
-  size: 0.2,
+  size: 0.22,
   vertexColors: true,
   transparent: true,
   opacity: 0.85
@@ -206,7 +215,7 @@ cakeGroup.add(ringMesh);
 // Bottom Tier Cake
 const bottomGeo = new THREE.CylinderGeometry(2.8, 2.9, 1.4, 48);
 const bottomMat = new THREE.MeshStandardMaterial({
-  color: 0x2e1065, // Cosmic violet
+  color: 0x2e1065,
   roughness: 0.35,
   metalness: 0.15
 });
@@ -214,11 +223,11 @@ const bottomTier = new THREE.Mesh(bottomGeo, bottomMat);
 bottomTier.position.y = -0.4;
 cakeGroup.add(bottomTier);
 
-// Bottom Frosting Trim Beads
+// Frosting Trim Beads
 const beadCount = 32;
 const beadGeo = new THREE.SphereGeometry(0.12, 12, 12);
 const frostingMat = new THREE.MeshStandardMaterial({
-  color: 0xf472b6, // Rosy pink frosting
+  color: 0xf472b6,
   roughness: 0.2
 });
 for (let i = 0; i < beadCount; i++) {
@@ -257,7 +266,7 @@ const candleLights = [];
 const smokePuffs = [];
 
 const candlePositions = [
-  { x: 0, z: 0 },         // Center main candle
+  { x: 0, z: 0 },
   { x: 0.85, z: 0.5 },
   { x: -0.85, z: 0.5 },
   { x: 0, z: -0.9 },
@@ -271,7 +280,6 @@ candlePositions.forEach((pos, idx) => {
   const candleHolder = new THREE.Group();
   candleHolder.position.set(pos.x, 1.5, pos.z);
 
-  // Wax stick
   const waxGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.9, 16);
   const waxMat = new THREE.MeshStandardMaterial({
     color: candleColors[idx % candleColors.length],
@@ -281,14 +289,12 @@ candlePositions.forEach((pos, idx) => {
   wax.position.y = 0.45;
   candleHolder.add(wax);
 
-  // Wick
   const wickGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.15, 8);
   const wickMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
   const wick = new THREE.Mesh(wickGeo, wickMat);
   wick.position.y = 0.95;
   candleHolder.add(wick);
 
-  // Flame Mesh
   const flameGeo = new THREE.ConeGeometry(0.12, 0.35, 12);
   flameGeo.translate(0, 0.175, 0);
   const flameMat = new THREE.MeshBasicMaterial({
@@ -301,14 +307,12 @@ candlePositions.forEach((pos, idx) => {
   candleHolder.add(flame);
   candleFlames.push(flame);
 
-  // Inner flame core (white hot)
   const innerFlameGeo = new THREE.ConeGeometry(0.05, 0.2, 8);
   innerFlameGeo.translate(0, 0.1, 0);
   const innerFlameMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
   const innerFlame = new THREE.Mesh(innerFlameGeo, innerFlameMat);
   flame.add(innerFlame);
 
-  // Point light for warmth
   const candleLight = new THREE.PointLight(0xffa200, 1.5, 4.5);
   candleLight.position.y = 1.2;
   candleHolder.add(candleLight);
@@ -319,27 +323,28 @@ candlePositions.forEach((pos, idx) => {
 });
 
 // ------------------------------------------
-// 3D FLOATING MEDIA GALLERY (Images & Videos)
+// 3D FLOATING MEDIA CARDS (Large & Clear)
 // ------------------------------------------
 const mediaGroup = new THREE.Group();
 universeGroup.add(mediaGroup);
 const mediaMeshes = [];
+const mediaFrameHolders = [];
 const textureLoader = new THREE.TextureLoader();
 
 function createMediaGallery() {
-  // Clear existing meshes
   while (mediaGroup.children.length > 0) {
     mediaGroup.remove(mediaGroup.children[0]);
   }
   mediaMeshes.length = 0;
+  mediaFrameHolders.length = 0;
 
   const count = mediaItems.length;
   if (count === 0) return;
 
   mediaItems.forEach((item, index) => {
     const angle = (index / count) * Math.PI * 2;
-    const distance = 6.8;
-    const height = 1.0 + Math.sin(index * 2) * 1.2;
+    const distance = 6.6;
+    const height = 1.2 + (index % 2 === 0 ? 0.4 : -0.2);
 
     const frameHolder = new THREE.Group();
     frameHolder.position.set(
@@ -347,37 +352,36 @@ function createMediaGallery() {
       height,
       Math.sin(angle) * distance
     );
-    // Face the center cake
+    // Face center cake
     frameHolder.lookAt(0, height, 0);
-    frameHolder.rotateY(Math.PI); // Orient texture forward
+    frameHolder.rotateY(Math.PI);
 
-    // Frame Outer Border (Glassmorphic metallic frame)
-    const frameBorderGeo = new THREE.BoxGeometry(2.3, 1.7, 0.08);
+    // Frame Border (Larger, prominent card frame)
+    const frameBorderGeo = new THREE.BoxGeometry(2.7, 1.9, 0.08);
     const frameBorderMat = new THREE.MeshStandardMaterial({
-      color: 0x312e81,
+      color: 0x1e1b4b,
       metalness: 0.85,
       roughness: 0.2,
-      emissive: 0x4f46e5,
-      emissiveIntensity: 0.35
+      emissive: 0x3b82f6,
+      emissiveIntensity: 0.3
     });
     const frameBorder = new THREE.Mesh(frameBorderGeo, frameBorderMat);
     frameHolder.add(frameBorder);
 
     // Glowing Neon Rim
-    const rimGeo = new THREE.BoxGeometry(2.36, 1.76, 0.04);
+    const rimGeo = new THREE.BoxGeometry(2.76, 1.96, 0.04);
     const rimMat = new THREE.MeshBasicMaterial({
-      color: 0xec4899,
+      color: index === activeCardIndex ? 0xf59e0b : 0xc084fc,
       wireframe: true
     });
     const rim = new THREE.Mesh(rimGeo, rimMat);
     frameHolder.add(rim);
 
-    // Picture or Video Screen Plane
-    const screenGeo = new THREE.PlaneGeometry(2.1, 1.5);
+    // Photo / Video Screen Plane
+    const screenGeo = new THREE.PlaneGeometry(2.5, 1.7);
     let screenMat;
 
     if (item.type === "video") {
-      // Create HTML5 Video Element
       const videoEl = document.createElement("video");
       videoEl.src = item.url;
       videoEl.crossOrigin = "anonymous";
@@ -396,7 +400,6 @@ function createMediaGallery() {
         side: THREE.DoubleSide
       });
     } else {
-      // Image Texture
       const tex = textureLoader.load(item.url);
       screenMat = new THREE.MeshBasicMaterial({
         map: tex,
@@ -406,26 +409,29 @@ function createMediaGallery() {
 
     const screenMesh = new THREE.Mesh(screenGeo, screenMat);
     screenMesh.position.z = 0.045;
-    screenMesh.userData = { mediaItem: item };
+    screenMesh.userData = { mediaItem: item, index: index };
     frameHolder.add(screenMesh);
     mediaMeshes.push(screenMesh);
 
-    // Floating Camera / Play Icon badge
+    // Play / Photo Badge in bottom corner
     const badgeGeo = new THREE.CircleGeometry(0.18, 16);
     const badgeMat = new THREE.MeshBasicMaterial({
       color: item.type === "video" ? 0xef4444 : 0x3b82f6,
       side: THREE.DoubleSide
     });
     const badge = new THREE.Mesh(badgeGeo, badgeMat);
-    badge.position.set(0.9, -0.65, 0.05);
+    badge.position.set(1.1, -0.72, 0.05);
     frameHolder.add(badge);
 
     mediaGroup.add(frameHolder);
+    mediaFrameHolders.push(frameHolder);
   });
 
-  // Update memory badge
   const memBadge = document.getElementById("memory-count-badge");
   if (memBadge) memBadge.textContent = mediaItems.length;
+
+  updateActiveCardUI();
+  renderShowcaseSection();
 }
 
 createMediaGallery();
@@ -441,7 +447,6 @@ const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 
 function createWishOrbs() {
-  // Clear existing
   while (wishOrbsGroup.children.length > 0) {
     wishOrbsGroup.remove(wishOrbsGroup.children[0]);
   }
@@ -459,7 +464,6 @@ function createWishOrbs() {
       Math.sin(angle) * distance
     );
 
-    // Glowing Wish Star Sphere
     const orbGeo = new THREE.SphereGeometry(0.28, 16, 16);
     const orbMat = new THREE.MeshStandardMaterial({
       color: 0xfef08a,
@@ -471,7 +475,6 @@ function createWishOrbs() {
     orb.userData = { wish: w, originalScale: 1 };
     orbGroup.add(orb);
 
-    // Halo Glow Ring
     const haloGeo = new THREE.RingGeometry(0.32, 0.42, 24);
     const haloMat = new THREE.MeshBasicMaterial({
       color: 0xfbbf24,
@@ -486,33 +489,135 @@ function createWishOrbs() {
     wishOrbMeshes.push(orb);
   });
 
-  // Update badge count
   const countBadge = document.getElementById("wish-count-badge");
   if (countBadge) countBadge.textContent = wishes.length;
 
-  // Update Live Wish Ticker
   updateLiveWishTicker();
+  renderWishesShowcase();
 }
 
 createWishOrbs();
 
 // ==========================================
-// 3. INTERACTIVE 3D ORBIT / TOUCH DRAG
+// 3. INTERACTIVE 3D ORBIT & SCROLL NAVIGATION
 // ==========================================
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
 let targetRotationY = 0;
 let targetRotationX = 0.15;
-let rotationSpeed = 0.005;
+let rotationSpeed = 0.0055;
 
+// Rotate 3D Camera directly to a selected card
+function rotateToCard(index) {
+  if (mediaItems.length === 0) return;
+  activeCardIndex = (index + mediaItems.length) % mediaItems.length;
+
+  const count = mediaItems.length;
+  const angle = (activeCardIndex / count) * Math.PI * 2;
+  // Calculate target rotation so card faces camera at z > 0
+  targetRotationY = -angle - Math.PI / 2;
+
+  updateActiveCardUI();
+  playBellTone(640);
+}
+
+function updateActiveCardUI() {
+  if (mediaItems.length === 0) return;
+  const activeItem = mediaItems[activeCardIndex];
+  if (!activeItem) return;
+
+  const titleEl = document.getElementById("active-card-title");
+  const iconEl = document.getElementById("active-card-icon");
+  if (titleEl) {
+    titleEl.textContent = `Card ${activeCardIndex + 1}/${mediaItems.length}: ${activeItem.title}`;
+  }
+  if (iconEl) {
+    iconEl.textContent = activeItem.type === "video" ? "🎥" : "📸";
+  }
+}
+
+// Prev / Next Card buttons
+document.getElementById("prev-card-btn").addEventListener("click", () => {
+  rotateToCard(activeCardIndex - 1);
+});
+
+document.getElementById("next-card-btn").addEventListener("click", () => {
+  rotateToCard(activeCardIndex + 1);
+});
+
+document.getElementById("active-card-pill").addEventListener("click", () => {
+  if (mediaItems[activeCardIndex]) {
+    showMediaInspect(mediaItems[activeCardIndex]);
+  }
+});
+
+// Auto-spin toggle
+const autoSpinBtn = document.getElementById("auto-spin-btn");
+autoSpinBtn.addEventListener("click", () => {
+  autoSpinEnabled = !autoSpinEnabled;
+  autoSpinBtn.classList.toggle("border-purple-400", autoSpinEnabled);
+  autoSpinBtn.querySelector("span:last-child").textContent = autoSpinEnabled ? "Auto Spin" : "Paused";
+  playBellTone(500);
+});
+
+// ------------------------------------------
+// MOUSE WHEEL & PAGE SCROLL TO ROTATE 3D CARDS
+// ------------------------------------------
+window.addEventListener('wheel', (e) => {
+  // If user is interacting inside a modal or drawer, don't hijack wheel
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal')) return;
+
+  // If at the top hero section, wheel spins the 3D cards universe!
+  if (window.scrollY < 250) {
+    targetRotationY += e.deltaY * 0.0035;
+    // Check nearest card index based on rotation angle
+    detectNearestCard();
+  }
+}, { passive: true });
+
+// Detect which card is facing camera
+function detectNearestCard() {
+  if (mediaItems.length === 0) return;
+  const count = mediaItems.length;
+  const normalizedAngle = (-targetRotationY - Math.PI / 2) % (Math.PI * 2);
+  const positiveAngle = (normalizedAngle + Math.PI * 2) % (Math.PI * 2);
+  const estimatedIndex = Math.round((positiveAngle / (Math.PI * 2)) * count) % count;
+
+  if (estimatedIndex !== activeCardIndex) {
+    activeCardIndex = estimatedIndex;
+    updateActiveCardUI();
+  }
+}
+
+// Parallax Camera tilt on page scroll
+window.addEventListener('scroll', () => {
+  const scrollY = window.scrollY;
+  // Subtle camera rise and tilt as user scrolls down to cards section
+  if (scrollY > 100) {
+    camera.position.y = 4.2 - (scrollY * 0.002);
+    targetRotationX = Math.min(0.35, 0.15 + (scrollY * 0.0003));
+  } else {
+    camera.position.y = 4.2;
+    targetRotationX = 0.15;
+  }
+}, { passive: true });
+
+// Scroll prompt button
+document.getElementById("scroll-prompt-btn").addEventListener("click", () => {
+  document.getElementById("cards-showcase-section").scrollIntoView({ behavior: "smooth" });
+});
+
+// ------------------------------------------
+// TOUCH & MOUSE DRAGGING TO ROTATE
+// ------------------------------------------
 window.addEventListener('mousedown', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   isDragging = true;
   previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
 window.addEventListener('touchstart', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   if (e.touches.length === 1) {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -527,6 +632,7 @@ window.addEventListener('mousemove', (e) => {
   targetRotationY += deltaX * rotationSpeed;
   targetRotationX = Math.max(-0.4, Math.min(0.6, targetRotationX + deltaY * rotationSpeed * 0.5));
   previousMousePosition = { x: e.clientX, y: e.clientY };
+  detectNearestCard();
 });
 
 window.addEventListener('touchmove', (e) => {
@@ -537,32 +643,33 @@ window.addEventListener('touchmove', (e) => {
   targetRotationY += deltaX * rotationSpeed;
   targetRotationX = Math.max(-0.4, Math.min(0.6, targetRotationX + deltaY * rotationSpeed * 0.5));
   previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  detectNearestCard();
 }, { passive: true });
 
 window.addEventListener('mouseup', () => isDragging = false);
 window.addEventListener('touchend', () => isDragging = false);
 
-// Click Raycasting on 3D Stars & 3D Media Frames
+// Raycasting click
 window.addEventListener('click', (e) => {
   if (isDragging) return;
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('button') || e.target.closest('input')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section')) return;
 
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
 
-  // Check 3D Media Meshes first
   const mediaIntersects = raycaster.intersectObjects(mediaMeshes);
   if (mediaIntersects.length > 0) {
-    const clickedMedia = mediaIntersects[0].object.userData.mediaItem;
-    if (clickedMedia) {
-      showMediaInspect(clickedMedia);
+    const clickedData = mediaIntersects[0].object.userData;
+    if (clickedData && clickedData.mediaItem) {
+      activeCardIndex = clickedData.index;
+      updateActiveCardUI();
+      showMediaInspect(clickedData.mediaItem);
       return;
     }
   }
 
-  // Check 3D Wish Stars
   const wishIntersects = raycaster.intersectObjects(wishOrbMeshes);
   if (wishIntersects.length > 0) {
     const clickedWish = wishIntersects[0].object.userData.wish;
@@ -585,7 +692,6 @@ document.getElementById("close-inspect-btn").addEventListener("click", () => {
   document.getElementById("star-inspect-card").classList.remove("active");
 });
 
-// Window resize
 window.addEventListener('resize', () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
@@ -593,7 +699,96 @@ window.addEventListener('resize', () => {
 });
 
 // ==========================================
-// 4. WEB AUDIO SYNTHESIZER & SOUND EFFECTS
+// 4. SCROLLABLE CARDS SHOWCASE (2D/3D Hybrid)
+// ==========================================
+function renderShowcaseSection() {
+  const grid = document.getElementById("memory-cards-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  mediaItems.forEach((item, index) => {
+    const card = document.createElement("div");
+    card.className = "card-showcase-item rounded-3xl bg-[#0e1026]/90 border border-purple-500/20 p-5 shadow-xl flex flex-col justify-between backdrop-blur-md cursor-pointer";
+    
+    const mediaPreview = item.type === "video" 
+      ? `<div class="relative w-full h-44 rounded-2xl overflow-hidden bg-black mb-3">
+           <video src="${item.url}" muted loop playsinline class="w-full h-full object-cover"></video>
+           <span class="absolute top-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🎥 Video</span>
+         </div>`
+      : `<div class="relative w-full h-44 rounded-2xl overflow-hidden bg-black mb-3">
+           <img src="${item.url}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover" />
+           <span class="absolute top-3 right-3 bg-blue-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">📸 Photo</span>
+         </div>`;
+
+    card.innerHTML = `
+      <div>
+        ${mediaPreview}
+        <div class="flex items-center justify-between text-xs text-purple-300/70 mb-1">
+          <span>${item.date || 'Moment'}</span>
+          <span class="text-rose-400 font-semibold">❤️ ${item.likes || 42}</span>
+        </div>
+        <h5 class="text-base font-bold text-white font-['Outfit']">${escapeHtml(item.title)}</h5>
+        <p class="text-xs text-purple-200/80 mt-1 line-clamp-2">${escapeHtml(item.caption || '')}</p>
+      </div>
+
+      <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+        <button class="view-in-3d-btn px-3 py-1.5 rounded-xl bg-purple-600/40 hover:bg-purple-600 border border-purple-400/40 text-xs font-bold text-white flex items-center space-x-1" data-index="${index}">
+          <span>🪐 View in 3D Sky</span>
+        </button>
+        <button class="expand-card-btn text-xs text-amber-300 font-bold hover:underline" data-index="${index}">
+          Read Story →
+        </button>
+      </div>
+    `;
+
+    // View in 3D Sky Button
+    card.querySelector(".view-in-3d-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      rotateToCard(index);
+    });
+
+    // Expand Card modal
+    card.addEventListener("click", () => {
+      showMediaInspect(item);
+    });
+
+    grid.appendChild(card);
+  });
+}
+
+function renderWishesShowcase() {
+  const grid = document.getElementById("wishes-cards-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  wishes.forEach(w => {
+    const card = document.createElement("div");
+    card.className = "p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-pink-500/40 transition-all flex flex-col justify-between";
+    card.innerHTML = `
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="font-bold text-amber-300 text-sm">${escapeHtml(w.name)}</span>
+          <span class="text-[11px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-200 border border-purple-400/20">${escapeHtml(w.vibe)}</span>
+        </div>
+        <p class="text-xs sm:text-sm text-gray-200 leading-relaxed italic">"${escapeHtml(w.message)}"</p>
+      </div>
+      <div class="mt-3 pt-2 border-t border-white/5 flex items-center justify-between text-[10px] text-gray-400">
+        <span>${w.date || 'Today'}</span>
+        <span class="text-amber-400">🌟 Pinned in 3D</span>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+document.getElementById("section-add-wish-btn").addEventListener("click", () => {
+  document.getElementById("wish-modal").classList.add("active");
+  initAudio();
+});
+
+// ==========================================
+// 5. WEB AUDIO SYNTHESIZER & SOUND EFFECTS
 // ==========================================
 let audioCtx = null;
 let soundEnabled = false;
@@ -625,9 +820,7 @@ function playBellTone(freq = 520, duration = 0.8) {
 
     osc.start();
     osc.stop(audioCtx.currentTime + duration);
-  } catch (err) {
-    console.warn("Audio bell tone issue", err);
-  }
+  } catch (err) {}
 }
 
 function playTickTone() {
@@ -652,19 +845,19 @@ function playBirthdayFanfare() {
   if (!audioCtx) return;
 
   const notes = [
-    { f: 261.63, d: 0.25 }, // C
-    { f: 261.63, d: 0.25 }, // C
-    { f: 293.66, d: 0.5 },  // D
-    { f: 261.63, d: 0.5 },  // C
-    { f: 349.23, d: 0.5 },  // F
-    { f: 329.63, d: 0.9 },  // E
-    { f: 261.63, d: 0.25 }, // C
-    { f: 261.63, d: 0.25 }, // C
-    { f: 293.66, d: 0.5 },  // D
-    { f: 261.63, d: 0.5 },  // C
-    { f: 392.00, d: 0.5 },  // G
-    { f: 349.23, d: 0.9 },  // F
-    { f: 523.25, d: 1.2 }   // High C
+    { f: 261.63, d: 0.25 },
+    { f: 261.63, d: 0.25 },
+    { f: 293.66, d: 0.5 },
+    { f: 261.63, d: 0.5 },
+    { f: 349.23, d: 0.5 },
+    { f: 329.63, d: 0.9 },
+    { f: 261.63, d: 0.25 },
+    { f: 261.63, d: 0.25 },
+    { f: 293.66, d: 0.5 },
+    { f: 261.63, d: 0.5 },
+    { f: 392.00, d: 0.5 },
+    { f: 349.23, d: 0.9 },
+    { f: 523.25, d: 1.2 }
   ];
 
   let time = audioCtx.currentTime + 0.1;
@@ -688,7 +881,6 @@ function playBirthdayFanfare() {
   });
 }
 
-// Sound toggle button
 const soundBtn = document.getElementById("sound-btn");
 const soundState = document.getElementById("sound-state");
 soundBtn.addEventListener("click", () => {
@@ -700,7 +892,7 @@ soundBtn.addEventListener("click", () => {
 });
 
 // ==========================================
-// 5. THE "BLOW THE MIC" AUDIO ENGINE
+// 6. THE "BLOW THE MIC" AUDIO ENGINE
 // ==========================================
 let micStream = null;
 let analyser = null;
@@ -805,25 +997,18 @@ function extinguishCandles(triggerType = "manual") {
   if (candlesExtinguished) return;
   candlesExtinguished = true;
 
-  // 1. Hide candle flames & dim lights
   candleFlames.forEach(flame => flame.visible = false);
   candleLights.forEach(light => light.intensity = 0);
 
-  // 2. Rising 3D Smoke Particles
   spawnSmokeParticles();
 
-  // 3. Status update
   statusText.textContent = "🎉 WISHES UNLOCKED! HAPPY BIRTHDAY SIKADEV! 🚀✨";
   statusPill.classList.remove("border-white/10");
   statusPill.classList.add("bg-gradient-to-r", "from-pink-600/30", "to-amber-500/30", "border-amber-400");
 
-  // 4. Celebratory Fanfare Audio
   playBirthdayFanfare();
-
-  // 5. Massive Confetti Fireworks Cascade!
   launchCelebrationConfetti();
 
-  // 6. UI Toggle
   relightBtn.classList.remove("hidden");
   micTriggerBtn.classList.add("hidden");
   manualBlowBtn.classList.add("hidden");
@@ -910,7 +1095,7 @@ relightBtn.addEventListener("click", () => {
 });
 
 // ==========================================
-// 6. TIMED LIVE EVENT & PRESENCE ENGINE
+// 7. TIMED LIVE EVENT & PRESENCE ENGINE
 // ==========================================
 const countdownTimerDisplay = document.getElementById("countdown-timer-display");
 const livePresenceCount = document.getElementById("live-presence-count");
@@ -920,11 +1105,10 @@ const dismissLiveOverlayBtn = document.getElementById("dismiss-live-overlay-btn"
 
 let liveCelebrationTriggered = false;
 
-// Presence Simulator with dynamic lifelike variance
-let simulatedLovelies = 23;
+let simulatedLovelies = 24;
 setInterval(() => {
   const delta = (Math.random() > 0.45 ? 1 : -1) * (Math.floor(Math.random() * 2));
-  simulatedLovelies = Math.max(12, Math.min(84, simulatedLovelies + delta));
+  simulatedLovelies = Math.max(14, Math.min(88, simulatedLovelies + delta));
   if (livePresenceCount) livePresenceCount.textContent = simulatedLovelies;
 }, 3500);
 
@@ -954,7 +1138,6 @@ function updateLiveCountdown() {
 setInterval(updateLiveCountdown, 1000);
 updateLiveCountdown();
 
-// Trigger the 10-second countdown synchronized event
 function triggerSynchronizedLiveCelebration() {
   liveCelebrationTriggered = true;
   initAudio();
@@ -972,7 +1155,6 @@ function triggerSynchronizedLiveCelebration() {
     } else {
       clearInterval(syncTimer);
       liveSyncCountdown.textContent = "BLOW! 🎂💨";
-      // Auto-blow candles & erupt celebration
       setTimeout(() => {
         liveEventOverlay.classList.remove("active");
         extinguishCandles("live");
@@ -986,19 +1168,16 @@ dismissLiveOverlayBtn.addEventListener("click", () => {
   extinguishCandles("manual");
 });
 
-// ------------------------------------------
-// LIVE WISH TICKER BAR
-// ------------------------------------------
 function updateLiveWishTicker() {
   const ticker = document.getElementById("ticker-content");
   if (!ticker) return;
 
   const tickerText = wishes.map(w => `🌟 "${w.message}" — ${w.name} (${w.vibe})`).join("  •  ");
-  ticker.textContent = tickerText + "  •  " + tickerText; // Double for continuous loop
+  ticker.textContent = tickerText + "  •  " + tickerText;
 }
 
 // ==========================================
-// 7. 3D MEDIA INSPECTION MODAL
+// 8. 3D MEDIA INSPECTION MODAL
 // ==========================================
 const mediaInspectModal = document.getElementById("media-inspect-modal");
 const closeMediaInspectBtn = document.getElementById("close-media-inspect-btn");
@@ -1041,7 +1220,6 @@ function showMediaInspect(media) {
 
 closeMediaInspectBtn.addEventListener("click", () => {
   mediaInspectModal.classList.remove("active");
-  // Pause any video inside
   const vid = inspectMediaDisplay.querySelector("video");
   if (vid) vid.pause();
 });
@@ -1052,19 +1230,19 @@ likeMemoryBtn.addEventListener("click", () => {
   memoryLikesCount.textContent = `${currentInspectedMedia.likes} Loves`;
   confetti({ particleCount: 30, spread: 60, origin: { y: 0.6 } });
   playBellTone(880);
+  renderShowcaseSection();
 });
 
-// View all 3D Media shortcut button
 document.getElementById("view-memories-btn").addEventListener("click", () => {
   if (mediaItems.length > 0) {
-    showMediaInspect(mediaItems[0]);
+    showMediaInspect(mediaItems[activeCardIndex] || mediaItems[0]);
   } else {
     alert("No 3D media added yet! Tap the Admin button to add your photos and videos.");
   }
 });
 
 // ==========================================
-// 8. ADMIN STUDIO (Passcode, Media & Scheduler)
+// 9. ADMIN STUDIO
 // ==========================================
 const adminModal = document.getElementById("admin-modal");
 const adminTriggerBtn = document.getElementById("admin-trigger-btn");
@@ -1075,7 +1253,6 @@ const adminPinInput = document.getElementById("admin-pin-input");
 const adminLoginBtn = document.getElementById("admin-login-btn");
 const adminLogoutBtn = document.getElementById("admin-logout-btn");
 
-// Secret Triple-click on brand logo to open admin
 let logoClickCount = 0;
 let logoTimer = null;
 document.getElementById("brand-logo").addEventListener("click", () => {
@@ -1088,7 +1265,6 @@ document.getElementById("brand-logo").addEventListener("click", () => {
   }
 });
 
-// Keyboard shortcut: Alt + A
 window.addEventListener("keydown", (e) => {
   if (e.altKey && (e.key === "a" || e.key === "A")) {
     openAdminModal();
@@ -1129,7 +1305,6 @@ adminLogoutBtn.addEventListener("click", () => {
   adminAuthScreen.classList.remove("hidden");
 });
 
-// Admin Tabs
 const tabMediaBtn = document.getElementById("tab-media-btn");
 const tabEventBtn = document.getElementById("tab-event-btn");
 const tabSettingsBtn = document.getElementById("tab-settings-btn");
@@ -1153,20 +1328,14 @@ tabMediaBtn.addEventListener("click", () => switchAdminTab(adminTabMedia, tabMed
 tabEventBtn.addEventListener("click", () => switchAdminTab(adminTabEvent, tabEventBtn));
 tabSettingsBtn.addEventListener("click", () => switchAdminTab(adminTabSettings, tabSettingsBtn));
 
-// Load Admin Dashboard
 function loadAdminDashboard() {
-  // Populate Media List
   renderAdminMediaList();
-
-  // Populate Event Scheduler Time
   const eventDateTimeInput = document.getElementById("event-datetime-input");
   const currentScheduled = new Date(SIKADEV_CONFIG.liveCelebrationTime);
-  // Format for datetime-local (YYYY-MM-DDTHH:MM)
   const offset = currentScheduled.getTimezoneOffset() * 60000;
   const localISOTime = (new Date(currentScheduled - offset)).toISOString().slice(0, 16);
   eventDateTimeInput.value = localISOTime;
 
-  // Populate Phone
   document.getElementById("admin-phone-input").value = SIKADEV_CONFIG.defaultPhone;
 }
 
@@ -1200,7 +1369,7 @@ function renderAdminMediaList() {
   });
 
   list.querySelectorAll(".delete-media-btn").forEach(btn => {
-    btn.addEventListener("click", (e) => {
+    btn.addEventListener("click", () => {
       const idx = parseInt(btn.getAttribute("data-index"));
       mediaItems.splice(idx, 1);
       localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
@@ -1210,7 +1379,6 @@ function renderAdminMediaList() {
   });
 }
 
-// Add Media Handler
 const addMediaForm = document.getElementById("add-media-form");
 const mediaFileInput = document.getElementById("media-file-input");
 const mediaUrlInput = document.getElementById("media-url-input");
@@ -1221,7 +1389,7 @@ mediaFileInput.addEventListener("change", (e) => {
 
   const reader = new FileReader();
   reader.onload = function(evt) {
-    mediaUrlInput.value = evt.target.result; // Data URL
+    mediaUrlInput.value = evt.target.result;
   };
   reader.readAsDataURL(file);
 });
@@ -1251,24 +1419,19 @@ addMediaForm.addEventListener("submit", (e) => {
   mediaItems.unshift(newMedia);
   try {
     localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
-  } catch (err) {
-    console.warn("Storage quota warning", err);
-  }
+  } catch (err) {}
 
-  // Update 3D scene immediately
   createMediaGallery();
   renderAdminMediaList();
 
-  // Reset form
   addMediaForm.reset();
   confetti({ particleCount: 40, spread: 60 });
   alert("✨ Memory added into Sikadev's 3D Orbit Sky!");
 });
 
-// Event Scheduler Quick Buttons
 document.getElementById("set-midnight-btn").addEventListener("click", () => {
   const target = new Date();
-  target.setHours(24, 0, 0, 0); // Midnight tonight
+  target.setHours(24, 0, 0, 0);
   setEventInputDate(target);
 });
 
@@ -1296,18 +1459,16 @@ document.getElementById("save-event-time-btn").addEventListener("click", () => {
   const targetDate = new Date(val);
   SIKADEV_CONFIG.liveCelebrationTime = targetDate.toISOString();
   localStorage.setItem("sikadev_live_time", SIKADEV_CONFIG.liveCelebrationTime);
-  liveCelebrationTriggered = false; // Reset trigger
+  liveCelebrationTriggered = false;
   updateLiveCountdown();
   alert(`⏰ Live Celebration set for: ${targetDate.toLocaleString()}`);
 });
 
-// Force Live Celebration Now (Test button)
 document.getElementById("force-live-now-btn").addEventListener("click", () => {
   adminModal.classList.remove("active");
   triggerSynchronizedLiveCelebration();
 });
 
-// Save WhatsApp Phone
 document.getElementById("save-phone-btn").addEventListener("click", () => {
   const phone = document.getElementById("admin-phone-input").value.trim();
   SIKADEV_CONFIG.defaultPhone = phone;
@@ -1315,7 +1476,6 @@ document.getElementById("save-phone-btn").addEventListener("click", () => {
   alert("📲 WhatsApp phone number saved!");
 });
 
-// Update PIN
 document.getElementById("save-pin-btn").addEventListener("click", () => {
   const newPin = document.getElementById("admin-new-pin-input").value.trim();
   if (newPin.length < 4) {
@@ -1328,7 +1488,7 @@ document.getElementById("save-pin-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 9. WISH SYSTEM & WHATSAPP GENERATION
+// 10. WISH SYSTEM & WHATSAPP GENERATION
 // ==========================================
 const wishModal = document.getElementById("wish-modal");
 const openWishModalBtn = document.getElementById("open-wish-modal-btn");
@@ -1432,11 +1592,10 @@ function saveWishLocally(name, message, vibe) {
 
   createWishOrbs();
   renderWishesDrawer();
+  renderWishesShowcase();
 }
 
-// ------------------------------------------
-// WISHES DRAWER (All Wishes List)
-// ------------------------------------------
+// Wishes Drawer
 const wishesDrawer = document.getElementById("wishes-drawer");
 const viewWishesBtn = document.getElementById("view-wishes-btn");
 const closeWishesDrawerBtn = document.getElementById("close-wishes-drawer");
@@ -1498,7 +1657,7 @@ Blow out the digital candles using your microphone, view 3D memories & join our 
 });
 
 // ==========================================
-// 10. MAIN ANIMATION LOOP
+// 11. MAIN ANIMATION LOOP
 // ==========================================
 let clock = new THREE.Clock();
 
@@ -1508,13 +1667,14 @@ function animate() {
   const delta = clock.getDelta();
   const elapsedTime = clock.getElapsedTime();
 
-  // Smooth rotation
+  // Smooth rotation interpolation
   universeGroup.rotation.y += (targetRotationY - universeGroup.rotation.y) * 0.08;
   cakeGroup.rotation.x += (targetRotationX - cakeGroup.rotation.x) * 0.08;
 
-  // Gentle ambient spin
-  if (!isDragging) {
+  // Gentle ambient spin if auto-spin is on and not dragging
+  if (!isDragging && autoSpinEnabled && window.scrollY < 200) {
     targetRotationY += 0.0018;
+    detectNearestCard();
   }
 
   // Starfield drift
@@ -1556,8 +1716,8 @@ function animate() {
   });
 
   // Animate 3D Media Frames gentle hovering wave
-  mediaGroup.children.forEach((frameGroup, idx) => {
-    frameGroup.position.y += Math.sin(elapsedTime * 1.5 + idx * 2) * 0.0025;
+  mediaFrameHolders.forEach((frameGroup, idx) => {
+    frameGroup.position.y += Math.sin(elapsedTime * 1.6 + idx * 2) * 0.003;
   });
 
   renderer.render(scene, camera);

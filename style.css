@@ -1,5 +1,9 @@
 /* Custom styles for Sikadev's 3D Birthday Universe */
 
+html {
+  scroll-behavior: smooth;
+}
+
 @keyframes bounceSlow {
   0%, 100% {
     transform: translateY(0);
@@ -26,7 +30,7 @@
 .animate-marquee {
   display: inline-block;
   white-space: nowrap;
-  animation: marquee 25s linear infinite;
+  animation: marquee 28s linear infinite;
 }
 
 .animate-marquee:hover {
@@ -35,15 +39,27 @@
 
 /* Glassmorphism helpers */
 .glass-pill {
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .glass-pill:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
   border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* 3D Showcase Card Styles */
+.card-showcase-item {
+  transform-style: preserve-3d;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.card-showcase-item:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 45px -15px rgba(168, 85, 247, 0.45);
+  border-color: rgba(236, 72, 153, 0.6);
 }
 
 /* Modal Open animations */
@@ -77,20 +93,20 @@
 
 /* Custom scrollbars */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.3);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(168, 85, 247, 0.4);
+  background: rgba(168, 85, 247, 0.5);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(168, 85, 247, 0.7);
+  background: rgba(168, 85, 247, 0.8);
 }
 
-/* Touch & selection adjustments for smooth mobile interaction */
+/* Canvas styling */
 canvas {
   touch-action: none;
 }

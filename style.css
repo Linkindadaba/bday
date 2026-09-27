@@ -1,4 +1,4 @@
-/* Custom styles for Sikadev's 3D Birthday Universe */
+/* Custom styles for Sikadev's Virtual Birthday Event Room */
 
 html {
   scroll-behavior: smooth;
@@ -15,6 +15,33 @@ html {
 
 .animate-bounce-slow {
   animation: bounceSlow 3s ease-in-out infinite;
+}
+
+/* Floating Live Reaction Animation */
+@keyframes floatReaction {
+  0% {
+    transform: translateY(0) scale(0.6) rotate(0deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-30px) scale(1.2) rotate(-8deg);
+  }
+  50% {
+    transform: translateY(-160px) scale(1.1) rotate(12deg);
+  }
+  100% {
+    transform: translateY(-340px) scale(0.8) rotate(-15deg);
+    opacity: 0;
+  }
+}
+
+.floating-reaction {
+  position: absolute;
+  pointer-events: none;
+  font-size: 2rem;
+  animation: floatReaction 2.4s ease-out forwards;
+  z-index: 40;
 }
 
 /* Marquee for live wishes */
@@ -65,14 +92,16 @@ html {
 /* Modal Open animations */
 #wish-modal.active,
 #admin-modal.active,
-#media-inspect-modal.active {
+#media-inspect-modal.active,
+#snapshot-modal.active {
   opacity: 1;
   pointer-events: auto;
 }
 
 #wish-modal.active > div,
 #admin-modal.active > div,
-#media-inspect-modal.active > div {
+#media-inspect-modal.active > div,
+#snapshot-modal.active > div {
   transform: scale(1);
 }
 
@@ -106,7 +135,6 @@ html {
   background: rgba(168, 85, 247, 0.8);
 }
 
-/* Canvas styling */
 canvas {
   touch-action: none;
 }

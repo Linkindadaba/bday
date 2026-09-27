@@ -1,5 +1,5 @@
-// Sikadev's 3D Birthday Universe - Core Engine
-// Interactive 3D Orbit, Scroll to Rotate, 3D Media Showcase & Live Event Engine
+// Sikadev's Virtual Birthday Event Room
+// Live Video Camera Mode + 3D Cake Candle Blow + Photo Booth + Live Reactions + WhatsApp Engine
 
 // ==========================================
 // 1. STATE & STORAGE
@@ -65,9 +65,6 @@ try {
   wishes = DEFAULT_WISHES;
 }
 
-// ------------------------------------------
-// 3D Media Gallery Defaults
-// ------------------------------------------
 const DEFAULT_MEDIA = [
   {
     id: 101,
@@ -108,6 +105,8 @@ try {
 
 let activeCardIndex = 0;
 let autoSpinEnabled = true;
+let isVideoMode = false;
+let userMediaStream = null;
 
 // ==========================================
 // 2. THREE.JS 3D SCENE SETUP
@@ -119,15 +118,15 @@ scene.fog = new THREE.FogExp2(0x090a16, 0.022);
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.set(0, 4.2, 13.5);
 
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.25;
+renderer.toneMappingExposure = 1.3;
 container.appendChild(renderer.domElement);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
 scene.add(ambientLight);
 
 const dirLight = new THREE.DirectionalLight(0xc084fc, 1.4);
@@ -138,13 +137,10 @@ const blueRimLight = new THREE.DirectionalLight(0x38bdf8, 0.95);
 blueRimLight.position.set(-6, -2, -5);
 scene.add(blueRimLight);
 
-// Group to hold the rotating cake, media frames & wish constellation
 const universeGroup = new THREE.Group();
 scene.add(universeGroup);
 
-// ------------------------------------------
-// Procedural Starfield & Cosmic Dust
-// ------------------------------------------
+// Procedural Starfield
 const starCount = 1400;
 const starGeometry = new THREE.BufferGeometry();
 const starPositions = new Float32Array(starCount * 3);
@@ -204,7 +200,6 @@ const plate = new THREE.Mesh(plateGeo, plateMat);
 plate.position.y = -1.2;
 cakeGroup.add(plate);
 
-// Glowing pedestal ring
 const ringGeo = new THREE.TorusGeometry(3.65, 0.05, 16, 64);
 const ringMat = new THREE.MeshBasicMaterial({ color: 0xc084fc });
 const ringMesh = new THREE.Mesh(ringGeo, ringMat);
@@ -248,7 +243,6 @@ const topTier = new THREE.Mesh(topGeo, topMat);
 topTier.position.y = 0.9;
 cakeGroup.add(topTier);
 
-// Top Frosting Trim Beads
 const topBeadCount = 22;
 for (let i = 0; i < topBeadCount; i++) {
   const angle = (i / topBeadCount) * Math.PI * 2;
@@ -258,7 +252,7 @@ for (let i = 0; i < topBeadCount; i++) {
 }
 
 // ------------------------------------------
-// Birthday Candles & Animated Flickering Flames
+// Candles & Animated Flickering Flames
 // ------------------------------------------
 const candles = [];
 const candleFlames = [];
@@ -352,11 +346,9 @@ function createMediaGallery() {
       height,
       Math.sin(angle) * distance
     );
-    // Face center cake
     frameHolder.lookAt(0, height, 0);
     frameHolder.rotateY(Math.PI);
 
-    // Frame Border (Larger, prominent card frame)
     const frameBorderGeo = new THREE.BoxGeometry(2.7, 1.9, 0.08);
     const frameBorderMat = new THREE.MeshStandardMaterial({
       color: 0x1e1b4b,
@@ -368,7 +360,6 @@ function createMediaGallery() {
     const frameBorder = new THREE.Mesh(frameBorderGeo, frameBorderMat);
     frameHolder.add(frameBorder);
 
-    // Glowing Neon Rim
     const rimGeo = new THREE.BoxGeometry(2.76, 1.96, 0.04);
     const rimMat = new THREE.MeshBasicMaterial({
       color: index === activeCardIndex ? 0xf59e0b : 0xc084fc,
@@ -377,7 +368,6 @@ function createMediaGallery() {
     const rim = new THREE.Mesh(rimGeo, rimMat);
     frameHolder.add(rim);
 
-    // Photo / Video Screen Plane
     const screenGeo = new THREE.PlaneGeometry(2.5, 1.7);
     let screenMat;
 
@@ -413,7 +403,6 @@ function createMediaGallery() {
     frameHolder.add(screenMesh);
     mediaMeshes.push(screenMesh);
 
-    // Play / Photo Badge in bottom corner
     const badgeGeo = new THREE.CircleGeometry(0.18, 16);
     const badgeMat = new THREE.MeshBasicMaterial({
       color: item.type === "video" ? 0xef4444 : 0x3b82f6,
@@ -436,9 +425,7 @@ function createMediaGallery() {
 
 createMediaGallery();
 
-// ------------------------------------------
-// Floating Wish Constellation (Orbiting Orbs)
-// ------------------------------------------
+// Floating Wish Orbs
 const wishOrbsGroup = new THREE.Group();
 universeGroup.add(wishOrbsGroup);
 const wishOrbMeshes = [];
@@ -499,7 +486,216 @@ function createWishOrbs() {
 createWishOrbs();
 
 // ==========================================
-// 3. INTERACTIVE 3D ORBIT & SCROLL NAVIGATION
+// 3. LIVE VIDEO CAMERA MODE (Selfie Cake Blowout)
+// ==========================================
+const liveCamToggleBtn = document.getElementById("live-cam-toggle-btn");
+const camBtnText = document.getElementById("cam-btn-text");
+const camIcon = document.getElementById("cam-icon");
+const liveVideoBadge = document.getElementById("live-video-badge");
+const liveCameraStage = document.getElementById("live-camera-stage");
+const webcamVideo = document.getElementById("webcam-video");
+const ambientOverlay = document.getElementById("ambient-overlay");
+const eventRoomSubtitle = document.getElementById("event-room-subtitle");
+
+liveCamToggleBtn.addEventListener("click", async () => {
+  if (isVideoMode) {
+    stopLiveVideoMode();
+  } else {
+    await startLiveVideoMode();
+  }
+});
+
+async function startLiveVideoMode() {
+  initAudio();
+  try {
+    userMediaStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user" },
+      audio: true
+    });
+
+    webcamVideo.srcObject = userMediaStream;
+    await webcamVideo.play();
+
+    isVideoMode = true;
+    liveCameraStage.classList.remove("opacity-0");
+    liveCameraStage.classList.add("opacity-100");
+    liveVideoBadge.classList.remove("hidden");
+    ambientOverlay.classList.add("opacity-25"); // Soften overlay
+
+    camBtnText.textContent = "Exit Video Mode";
+    camIcon.textContent = "⏹️";
+    liveCamToggleBtn.classList.remove("from-rose-600", "to-purple-600");
+    liveCamToggleBtn.classList.add("from-gray-700", "to-gray-900");
+
+    eventRoomSubtitle.textContent = "You are LIVE on camera! Lean in and blow directly into your screen! 🎂💨";
+    statusText.textContent = "Live Video active! Look at the camera & blow the candles!";
+
+    // Automatically hook audio stream to mic blow analyzer
+    connectStreamToMicAnalyzer(userMediaStream);
+
+    // Adjust camera slightly forward for intimate selfie view
+    camera.position.z = 11.8;
+    camera.position.y = 3.6;
+
+    confetti({ particleCount: 30, spread: 60 });
+    playBellTone(880);
+  } catch (err) {
+    console.error("Camera access error:", err);
+    alert("Camera permission denied or camera not available. You can still use the 3D Space mode!");
+  }
+}
+
+function stopLiveVideoMode() {
+  if (userMediaStream) {
+    userMediaStream.getTracks().forEach(track => track.stop());
+    userMediaStream = null;
+  }
+  webcamVideo.srcObject = null;
+  isVideoMode = false;
+
+  liveCameraStage.classList.remove("opacity-100");
+  liveCameraStage.classList.add("opacity-0");
+  liveVideoBadge.classList.add("hidden");
+  ambientOverlay.classList.remove("opacity-25");
+
+  camBtnText.textContent = "Live Video Mode";
+  camIcon.textContent = "📹";
+  liveCamToggleBtn.classList.add("from-rose-600", "to-purple-600");
+  liveCamToggleBtn.classList.remove("from-gray-700", "to-gray-900");
+
+  eventRoomSubtitle.textContent = "Turn on Live Video to blow out candles in selfie mode with your Lovelies! ✨";
+  camera.position.z = 13.5;
+  camera.position.y = 4.2;
+
+  stopMic();
+}
+
+// ------------------------------------------
+// PHOTO BOOTH SNAPSHOT
+// ------------------------------------------
+const snapPhotoBtn = document.getElementById("snap-photo-btn");
+const snapshotModal = document.getElementById("snapshot-modal");
+const closeSnapshotModalBtn = document.getElementById("close-snapshot-modal");
+const snapshotCanvas = document.getElementById("snapshot-canvas");
+const downloadSnapshotBtn = document.getElementById("download-snapshot-btn");
+const shareSnapshotWhatsappBtn = document.getElementById("share-snapshot-whatsapp-btn");
+
+snapPhotoBtn.addEventListener("click", () => {
+  takeCelebrationSnapshot();
+});
+
+closeSnapshotModalBtn.addEventListener("click", () => {
+  snapshotModal.classList.remove("active");
+});
+
+function takeCelebrationSnapshot() {
+  initAudio();
+  playBellTone(900, 0.4);
+
+  const w = 720;
+  const h = 720;
+  snapshotCanvas.width = w;
+  snapshotCanvas.height = h;
+  const ctx = snapshotCanvas.getContext("2d");
+
+  // 1. Draw Background (Webcam frame or cosmic gradient)
+  if (isVideoMode && webcamVideo.videoWidth) {
+    ctx.save();
+    // Mirror the selfie camera
+    ctx.translate(w, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(webcamVideo, 0, 0, w, h);
+    ctx.restore();
+
+    // Dark vignette gradient over photo
+    const grad = ctx.createRadialGradient(w/2, h/2, 100, w/2, h/2, w/1.2);
+    grad.addColorStop(0, "rgba(0,0,0,0.1)");
+    grad.addColorStop(1, "rgba(9,10,22,0.7)");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+  } else {
+    // Cosmic gradient
+    const grad = ctx.createLinearGradient(0, 0, 0, h);
+    grad.addColorStop(0, "#090a16");
+    grad.addColorStop(0.5, "#2e1065");
+    grad.addColorStop(1, "#090a16");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, w, h);
+  }
+
+  // 2. Draw 3D WebGL Canvas Layer
+  ctx.drawImage(renderer.domElement, 0, 0, w, h);
+
+  // 3. Draw Polaroid Frame & Celebratory Badge
+  ctx.fillStyle = "rgba(14, 16, 38, 0.85)";
+  ctx.fillRect(0, h - 100, w, 100);
+
+  ctx.fillStyle = "#f59e0b";
+  ctx.font = "bold 26px Outfit, sans-serif";
+  ctx.textAlign = "left";
+  ctx.fillText("🎂 Sikadev's Virtual Birthday Room 🎉", 30, h - 55);
+
+  ctx.fillStyle = "#cbd5e1";
+  ctx.font = "14px 'Plus Jakarta Sans', sans-serif";
+  const nowStr = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  ctx.fillText(`✨ Celebrated live with Lovelies • ${nowStr}`, 30, h - 25);
+
+  snapshotModal.classList.add("active");
+  confetti({ particleCount: 50, spread: 80, origin: { y: 0.6 } });
+}
+
+downloadSnapshotBtn.addEventListener("click", () => {
+  const link = document.createElement("a");
+  link.download = `sikadev-birthday-snapshot-${Date.now()}.png`;
+  link.href = snapshotCanvas.toDataURL("image/png");
+  link.click();
+});
+
+shareSnapshotWhatsappBtn.addEventListener("click", () => {
+  const shareText = 
+`🎂 *Sikadev's Virtual Birthday Room Snapshot!* 📸✨
+
+We just blew out the candles in live video mode! Come send a wish and join the celebration room:
+👉 ${window.location.href}`;
+
+  const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+  window.open(shareUrl, "_blank");
+});
+
+// ------------------------------------------
+// FLOATING LIVE REACTIONS (TikTok/Instagram style)
+// ------------------------------------------
+const reactionsContainer = document.getElementById("reactions-container");
+
+document.querySelectorAll(".reaction-tap-btn").forEach(btn => {
+  btn.addEventListener("click", (e) => {
+    const emoji = btn.getAttribute("data-emoji");
+    spawnFloatingReaction(emoji);
+    playBellTone(700 + Math.random() * 200, 0.3);
+  });
+});
+
+function spawnFloatingReaction(emoji) {
+  const el = document.createElement("div");
+  el.className = "floating-reaction";
+  el.textContent = emoji;
+
+  // Random position on the right side
+  const startX = window.innerWidth - 70 - Math.random() * 60;
+  const startY = window.innerHeight - 100 - Math.random() * 40;
+
+  el.style.left = `${startX}px`;
+  el.style.top = `${startY}px`;
+
+  reactionsContainer.appendChild(el);
+
+  setTimeout(() => {
+    if (el.parentNode) el.parentNode.removeChild(el);
+  }, 2400);
+}
+
+// ==========================================
+// 4. INTERACTIVE 3D ORBIT & SCROLL NAVIGATION
 // ==========================================
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
@@ -507,14 +703,12 @@ let targetRotationY = 0;
 let targetRotationX = 0.15;
 let rotationSpeed = 0.0055;
 
-// Rotate 3D Camera directly to a selected card
 function rotateToCard(index) {
   if (mediaItems.length === 0) return;
   activeCardIndex = (index + mediaItems.length) % mediaItems.length;
 
   const count = mediaItems.length;
   const angle = (activeCardIndex / count) * Math.PI * 2;
-  // Calculate target rotation so card faces camera at z > 0
   targetRotationY = -angle - Math.PI / 2;
 
   updateActiveCardUI();
@@ -536,7 +730,6 @@ function updateActiveCardUI() {
   }
 }
 
-// Prev / Next Card buttons
 document.getElementById("prev-card-btn").addEventListener("click", () => {
   rotateToCard(activeCardIndex - 1);
 });
@@ -551,31 +744,16 @@ document.getElementById("active-card-pill").addEventListener("click", () => {
   }
 });
 
-// Auto-spin toggle
-const autoSpinBtn = document.getElementById("auto-spin-btn");
-autoSpinBtn.addEventListener("click", () => {
-  autoSpinEnabled = !autoSpinEnabled;
-  autoSpinBtn.classList.toggle("border-purple-400", autoSpinEnabled);
-  autoSpinBtn.querySelector("span:last-child").textContent = autoSpinEnabled ? "Auto Spin" : "Paused";
-  playBellTone(500);
-});
-
-// ------------------------------------------
-// MOUSE WHEEL & PAGE SCROLL TO ROTATE 3D CARDS
-// ------------------------------------------
+// Wheel Scroll to rotate
 window.addEventListener('wheel', (e) => {
-  // If user is interacting inside a modal or drawer, don't hijack wheel
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal')) return;
 
-  // If at the top hero section, wheel spins the 3D cards universe!
   if (window.scrollY < 250) {
     targetRotationY += e.deltaY * 0.0035;
-    // Check nearest card index based on rotation angle
     detectNearestCard();
   }
 }, { passive: true });
 
-// Detect which card is facing camera
 function detectNearestCard() {
   if (mediaItems.length === 0) return;
   const count = mediaItems.length;
@@ -589,35 +767,31 @@ function detectNearestCard() {
   }
 }
 
-// Parallax Camera tilt on page scroll
+// Parallax tilt on page scroll
 window.addEventListener('scroll', () => {
   const scrollY = window.scrollY;
-  // Subtle camera rise and tilt as user scrolls down to cards section
   if (scrollY > 100) {
     camera.position.y = 4.2 - (scrollY * 0.002);
     targetRotationX = Math.min(0.35, 0.15 + (scrollY * 0.0003));
   } else {
-    camera.position.y = 4.2;
+    camera.position.y = isVideoMode ? 3.6 : 4.2;
     targetRotationX = 0.15;
   }
 }, { passive: true });
 
-// Scroll prompt button
 document.getElementById("scroll-prompt-btn").addEventListener("click", () => {
   document.getElementById("cards-showcase-section").scrollIntoView({ behavior: "smooth" });
 });
 
-// ------------------------------------------
-// TOUCH & MOUSE DRAGGING TO ROTATE
-// ------------------------------------------
+// Touch and mouse drag
 window.addEventListener('mousedown', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   isDragging = true;
   previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
 window.addEventListener('touchstart', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a')) return;
   if (e.touches.length === 1) {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -652,7 +826,7 @@ window.addEventListener('touchend', () => isDragging = false);
 // Raycasting click
 window.addEventListener('click', (e) => {
   if (isDragging) return;
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section')) return;
 
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -699,7 +873,7 @@ window.addEventListener('resize', () => {
 });
 
 // ==========================================
-// 4. SCROLLABLE CARDS SHOWCASE (2D/3D Hybrid)
+// 5. SCROLLABLE CARDS SHOWCASE (2D/3D Hybrid)
 // ==========================================
 function renderShowcaseSection() {
   const grid = document.getElementById("memory-cards-grid");
@@ -741,14 +915,12 @@ function renderShowcaseSection() {
       </div>
     `;
 
-    // View in 3D Sky Button
     card.querySelector(".view-in-3d-btn").addEventListener("click", (e) => {
       e.stopPropagation();
       window.scrollTo({ top: 0, behavior: "smooth" });
       rotateToCard(index);
     });
 
-    // Expand Card modal
     card.addEventListener("click", () => {
       showMediaInspect(item);
     });
@@ -788,7 +960,7 @@ document.getElementById("section-add-wish-btn").addEventListener("click", () => 
 });
 
 // ==========================================
-// 5. WEB AUDIO SYNTHESIZER & SOUND EFFECTS
+// 6. WEB AUDIO SYNTHESIZER & SOUND EFFECTS
 // ==========================================
 let audioCtx = null;
 let soundEnabled = false;
@@ -892,7 +1064,7 @@ soundBtn.addEventListener("click", () => {
 });
 
 // ==========================================
-// 6. THE "BLOW THE MIC" AUDIO ENGINE
+// 7. THE "BLOW THE MIC" AUDIO ENGINE
 // ==========================================
 let micStream = null;
 let analyser = null;
@@ -910,6 +1082,26 @@ const statusPill = document.getElementById("status-pill");
 const relightBtn = document.getElementById("relight-btn");
 const manualBlowBtn = document.getElementById("manual-blow-btn");
 
+function connectStreamToMicAnalyzer(stream) {
+  initAudio();
+  try {
+    const source = audioCtx.createMediaStreamSource(stream);
+    analyser = audioCtx.createAnalyser();
+    analyser.fftSize = 256;
+    analyser.smoothingTimeConstant = 0.2;
+    source.connect(analyser);
+
+    micActive = true;
+    micBtnText.textContent = "Mic Ready (Blow Now!)";
+    micBtnIcon.textContent = "💨";
+    micTriggerBtn.classList.add("from-emerald-600", "to-teal-600");
+
+    listenForBlow();
+  } catch (err) {
+    console.error("Audio analyzer hook error:", err);
+  }
+}
+
 micTriggerBtn.addEventListener("click", async () => {
   initAudio();
   if (micActive) {
@@ -918,29 +1110,18 @@ micTriggerBtn.addEventListener("click", async () => {
   }
   try {
     micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const source = audioCtx.createMediaStreamSource(micStream);
-    analyser = audioCtx.createAnalyser();
-    analyser.fftSize = 256;
-    analyser.smoothingTimeConstant = 0.2;
-    source.connect(analyser);
-
-    micActive = true;
-    micBtnText.textContent = "Mic Active (Blow Now!)";
-    micBtnIcon.textContent = "💨";
-    micTriggerBtn.classList.add("from-emerald-600", "to-teal-600");
+    connectStreamToMicAnalyzer(micStream);
     statusText.textContent = "Listening! Take a breath and blow into your mic! 🌬️";
     statusPill.classList.add("border-emerald-400/50");
-
-    listenForBlow();
   } catch (err) {
     console.error("Mic error:", err);
-    alert("Microphone permission was denied or not supported. You can still use 'Tap to Blow'!");
+    alert("Microphone permission was denied. You can still use 'Tap to Blow'!");
     stopMic();
   }
 });
 
 function stopMic() {
-  if (micStream) {
+  if (micStream && !isVideoMode) {
     micStream.getTracks().forEach(track => track.stop());
     micStream = null;
   }
@@ -976,7 +1157,7 @@ function listenForBlow() {
   if (averageEnergy > 70) {
     blowEnergyAccumulator += 1;
     if (blowEnergyAccumulator > 8) {
-      extinguishCandles("mic");
+      extinguishCandles(isVideoMode ? "live-video" : "mic");
       return;
     }
   } else {
@@ -1002,7 +1183,9 @@ function extinguishCandles(triggerType = "manual") {
 
   spawnSmokeParticles();
 
-  statusText.textContent = "🎉 WISHES UNLOCKED! HAPPY BIRTHDAY SIKADEV! 🚀✨";
+  statusText.textContent = isVideoMode 
+    ? "🎉 CANDLES BLOWN ON LIVE VIDEO! HAPPY BIRTHDAY SIKADEV! 🚀✨"
+    : "🎉 WISHES UNLOCKED! HAPPY BIRTHDAY SIKADEV! 🚀✨";
   statusPill.classList.remove("border-white/10");
   statusPill.classList.add("bg-gradient-to-r", "from-pink-600/30", "to-amber-500/30", "border-amber-400");
 
@@ -1013,7 +1196,17 @@ function extinguishCandles(triggerType = "manual") {
   micTriggerBtn.classList.add("hidden");
   manualBlowBtn.classList.add("hidden");
 
-  if (micActive) stopMic();
+  // If in video mode, spawn celebratory reaction flurry
+  if (isVideoMode) {
+    for (let i = 0; i < 8; i++) {
+      setTimeout(() => {
+        const reactions = ["🎉", "🎂", "❤️", "🥂", "🚀", "👑"];
+        spawnFloatingReaction(reactions[Math.floor(Math.random() * reactions.length)]);
+      }, i * 300);
+    }
+  }
+
+  if (micActive && !isVideoMode) stopMic();
 }
 
 function spawnSmokeParticles() {
@@ -1091,11 +1284,15 @@ relightBtn.addEventListener("click", () => {
   micMeterBar.style.width = "0%";
   windPercentage.textContent = "0%";
 
+  if (isVideoMode && userMediaStream) {
+    connectStreamToMicAnalyzer(userMediaStream);
+  }
+
   playBellTone(700);
 });
 
 // ==========================================
-// 7. TIMED LIVE EVENT & PRESENCE ENGINE
+// 8. TIMED LIVE EVENT & PRESENCE ENGINE
 // ==========================================
 const countdownTimerDisplay = document.getElementById("countdown-timer-display");
 const livePresenceCount = document.getElementById("live-presence-count");
@@ -1105,10 +1302,10 @@ const dismissLiveOverlayBtn = document.getElementById("dismiss-live-overlay-btn"
 
 let liveCelebrationTriggered = false;
 
-let simulatedLovelies = 24;
+let simulatedLovelies = 26;
 setInterval(() => {
   const delta = (Math.random() > 0.45 ? 1 : -1) * (Math.floor(Math.random() * 2));
-  simulatedLovelies = Math.max(14, Math.min(88, simulatedLovelies + delta));
+  simulatedLovelies = Math.max(16, Math.min(92, simulatedLovelies + delta));
   if (livePresenceCount) livePresenceCount.textContent = simulatedLovelies;
 }, 3500);
 
@@ -1157,7 +1354,7 @@ function triggerSynchronizedLiveCelebration() {
       liveSyncCountdown.textContent = "BLOW! 🎂💨";
       setTimeout(() => {
         liveEventOverlay.classList.remove("active");
-        extinguishCandles("live");
+        extinguishCandles(isVideoMode ? "live-video" : "live");
       }, 900);
     }
   }, 1000);
@@ -1177,7 +1374,7 @@ function updateLiveWishTicker() {
 }
 
 // ==========================================
-// 8. 3D MEDIA INSPECTION MODAL
+// 9. 3D MEDIA INSPECTION MODAL
 // ==========================================
 const mediaInspectModal = document.getElementById("media-inspect-modal");
 const closeMediaInspectBtn = document.getElementById("close-media-inspect-btn");
@@ -1242,7 +1439,7 @@ document.getElementById("view-memories-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 9. ADMIN STUDIO
+// 10. ADMIN STUDIO
 // ==========================================
 const adminModal = document.getElementById("admin-modal");
 const adminTriggerBtn = document.getElementById("admin-trigger-btn");
@@ -1488,7 +1685,7 @@ document.getElementById("save-pin-btn").addEventListener("click", () => {
 });
 
 // ==========================================
-// 10. WISH SYSTEM & WHATSAPP GENERATION
+// 11. WISH SYSTEM & WHATSAPP GENERATION
 // ==========================================
 const wishModal = document.getElementById("wish-modal");
 const openWishModalBtn = document.getElementById("open-wish-modal-btn");
@@ -1531,7 +1728,7 @@ function buildWhatsAppWishUrl(name, message, vibe) {
 
 🌟 *Vibe:* ${vibe}
 
-🎈 *Sent via your 3D Birthday Universe!*
+🎈 *Sent via your Virtual Birthday Room!*
 🚀 ${window.location.href}`;
 
   const cleanPhone = (SIKADEV_CONFIG.defaultPhone || "").replace(/[^0-9]/g, '');
@@ -1573,7 +1770,7 @@ wishForm.addEventListener("submit", (e) => {
   wishModal.classList.remove("active");
 
   confetti({ particleCount: 70, spread: 90, origin: { y: 0.6 } });
-  statusText.textContent = `🌟 ${name}'s wish pinned into Sikadev's 3D Sky!`;
+  statusText.textContent = `🌟 ${name}'s wish pinned into Sikadev's Virtual Room!`;
   playBellTone(784);
 });
 
@@ -1595,7 +1792,6 @@ function saveWishLocally(name, message, vibe) {
   renderWishesShowcase();
 }
 
-// Wishes Drawer
 const wishesDrawer = document.getElementById("wishes-drawer");
 const viewWishesBtn = document.getElementById("view-wishes-btn");
 const closeWishesDrawerBtn = document.getElementById("close-wishes-drawer");
@@ -1643,13 +1839,13 @@ function escapeHtml(str) {
   }[tag] || tag));
 }
 
-// WhatsApp Share URL
+// WhatsApp Share Room URL
 quickShareBtn.addEventListener("click", () => {
   const currentUrl = window.location.href;
   const shareText = 
-`🎂 *Celebrate Sikadev's Birthday in 3D!* 🎉✨
+`🎂 *Join Sikadev's Virtual Birthday Room!* 📹🎉✨
 
-Blow out the digital candles using your microphone, view 3D memories & join our live celebration:
+Come celebrate in live video mode, blow out the 3D candles & drop your birthday wish:
 👉 ${currentUrl}`;
 
   const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -1657,7 +1853,7 @@ Blow out the digital candles using your microphone, view 3D memories & join our 
 });
 
 // ==========================================
-// 11. MAIN ANIMATION LOOP
+// 12. MAIN ANIMATION LOOP
 // ==========================================
 let clock = new THREE.Clock();
 
@@ -1667,17 +1863,14 @@ function animate() {
   const delta = clock.getDelta();
   const elapsedTime = clock.getElapsedTime();
 
-  // Smooth rotation interpolation
   universeGroup.rotation.y += (targetRotationY - universeGroup.rotation.y) * 0.08;
   cakeGroup.rotation.x += (targetRotationX - cakeGroup.rotation.x) * 0.08;
 
-  // Gentle ambient spin if auto-spin is on and not dragging
   if (!isDragging && autoSpinEnabled && window.scrollY < 200) {
     targetRotationY += 0.0018;
     detectNearestCard();
   }
 
-  // Starfield drift
   stars.rotation.y = elapsedTime * 0.012;
 
   // Candle Flames Dynamic Flickering
@@ -1694,7 +1887,7 @@ function animate() {
     });
   }
 
-  // Animate rising smoke puffs
+  // Rising smoke puffs
   for (let i = smokePuffs.length - 1; i >= 0; i--) {
     const puff = smokePuffs[i];
     puff.position.y += puff.userData.vy;
@@ -1709,13 +1902,13 @@ function animate() {
     }
   }
 
-  // Animate Floating Wish Orbs
+  // Floating Wish Orbs
   wishOrbsGroup.children.forEach((orbGroup, idx) => {
     orbGroup.position.y += Math.sin(elapsedTime * 2 + idx) * 0.003;
     orbGroup.rotation.y = elapsedTime * 0.4;
   });
 
-  // Animate 3D Media Frames gentle hovering wave
+  // Floating Media Frames
   mediaFrameHolders.forEach((frameGroup, idx) => {
     frameGroup.position.y += Math.sin(elapsedTime * 1.6 + idx * 2) * 0.003;
   });

@@ -13,6 +13,26 @@
   animation: bounceSlow 3s ease-in-out infinite;
 }
 
+/* Marquee for live wishes */
+@keyframes marquee {
+  0% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: marquee 25s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* Glassmorphism helpers */
 .glass-pill {
   background: rgba(255, 255, 255, 0.07);
@@ -27,12 +47,16 @@
 }
 
 /* Modal Open animations */
-#wish-modal.active {
+#wish-modal.active,
+#admin-modal.active,
+#media-inspect-modal.active {
   opacity: 1;
   pointer-events: auto;
 }
 
-#wish-modal.active > div {
+#wish-modal.active > div,
+#admin-modal.active > div,
+#media-inspect-modal.active > div {
   transform: scale(1);
 }
 
@@ -42,6 +66,11 @@
 
 #star-inspect-card.active {
   transform: translate(-50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#live-event-overlay.active {
   opacity: 1;
   pointer-events: auto;
 }

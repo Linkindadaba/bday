@@ -1,14 +1,25 @@
 // Sikadev's 3D Birthday Universe - Core Engine
-// Three.js 3D Graphics + Web Audio API Mic Blow Detection + Confetti + WhatsApp Wish Engine
+// Three.js 3D Graphics + 3D Media Gallery + Web Audio Mic Blow + Live Event Countdown + WhatsApp Engine
 
 // ==========================================
 // 1. STATE & STORAGE
 // ==========================================
 const SIKADEV_CONFIG = {
   name: "Sikadev",
-  defaultPhone: "", // Leave blank or fill with your country code + phone (e.g. "1234567890")
+  defaultPhone: localStorage.getItem("sikadev_phone") || "",
+  adminPin: localStorage.getItem("sikadev_admin_pin") || "2026",
+  // Default target celebration: Tomorrow midnight or 24 hours ahead
+  liveCelebrationTime: localStorage.getItem("sikadev_live_time") || getDefaultCelebrationTime()
 };
 
+function getDefaultCelebrationTime() {
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setHours(0, 0, 0, 0);
+  return tomorrow.toISOString();
+}
+
+// Default Seed Wishes
 const DEFAULT_WISHES = [
   {
     id: 1,
@@ -30,6 +41,13 @@ const DEFAULT_WISHES = [
     message: "Cheers to another glorious trip around the sun! May this year bring everything you wished for! 🥂",
     vibe: "🥂 Cheers & Joy",
     date: "Today"
+  },
+  {
+    id: 4,
+    name: "Devon",
+    message: "Happy Birthday to a real visionary! Drinks on me this weekend brother! 🍕",
+    vibe: "🍕 Food on Me",
+    date: "Today"
   }
 ];
 
@@ -41,43 +59,84 @@ try {
   wishes = DEFAULT_WISHES;
 }
 
+// ------------------------------------------
+// 3D Media Gallery Defaults
+// ------------------------------------------
+const DEFAULT_MEDIA = [
+  {
+    id: 101,
+    title: "Midnight Coding & Milestones 💻",
+    type: "image",
+    url: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop",
+    caption: "Countless late nights building dreams and breaking through barriers. Grateful for every line of code this year.",
+    likes: 48,
+    date: "Year in Review"
+  },
+  {
+    id: 102,
+    title: "Golden Hour Reflections 🌅",
+    type: "image",
+    url: "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=800&auto=format&fit=crop",
+    caption: "A moment to pause, breathe, and appreciate the journey and all the amazing people in it.",
+    likes: 65,
+    date: "Highlights"
+  },
+  {
+    id: 103,
+    title: "Celebration Waves 🌊",
+    type: "video",
+    url: "https://assets.mixkit.co/videos/preview/mixkit-waves-in-the-water-1164-large.mp4",
+    caption: "Riding the waves into this next chapter of life with peace, clarity, and bold ambition!",
+    likes: 92,
+    date: "Mood 2026"
+  }
+];
+
+let mediaItems = [];
+try {
+  const savedMedia = localStorage.getItem("sikadev_media");
+  mediaItems = savedMedia ? JSON.parse(savedMedia) : DEFAULT_MEDIA;
+} catch (e) {
+  mediaItems = DEFAULT_MEDIA;
+}
+
 // ==========================================
 // 2. THREE.JS 3D SCENE SETUP
 // ==========================================
 const container = document.getElementById("canvas-container");
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x090a16, 0.025);
+scene.fog = new THREE.FogExp2(0x090a16, 0.022);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 4.5, 12);
+camera.position.set(0, 4.5, 13);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure = 1.2;
+renderer.toneMappingExposure = 1.25;
 container.appendChild(renderer.domElement);
 
 // Lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
 scene.add(ambientLight);
 
-const dirLight = new THREE.DirectionalLight(0xc084fc, 1.2);
+const dirLight = new THREE.DirectionalLight(0xc084fc, 1.3);
 dirLight.position.set(5, 12, 7);
 scene.add(dirLight);
 
-const blueRimLight = new THREE.DirectionalLight(0x38bdf8, 0.8);
+const blueRimLight = new THREE.DirectionalLight(0x38bdf8, 0.9);
 blueRimLight.position.set(-6, -2, -5);
 scene.add(blueRimLight);
 
-// Group to hold the rotating cake & constellation
+// Group to hold the rotating cake, media frames & wish constellation
 const universeGroup = new THREE.Group();
 scene.add(universeGroup);
 
 // ------------------------------------------
-// Procedural Starfield & Nebula Dust
+// Procedural Starfield & Cosmic Dust
 // ------------------------------------------
-const starCount = 1200;
+const starCount = 1300;
 const starGeometry = new THREE.BufferGeometry();
 const starPositions = new Float32Array(starCount * 3);
 const starColors = new Float32Array(starCount * 3);
@@ -91,7 +150,7 @@ const palette = [
 
 for (let i = 0; i < starCount; i++) {
   const i3 = i * 3;
-  const radius = 25 + Math.random() * 45;
+  const radius = 26 + Math.random() * 50;
   const theta = Math.random() * Math.PI * 2;
   const phi = Math.acos(2 * Math.random() - 1);
 
@@ -109,7 +168,7 @@ starGeometry.setAttribute('position', new THREE.BufferAttribute(starPositions, 3
 starGeometry.setAttribute('color', new THREE.BufferAttribute(starColors, 3));
 
 const starMaterial = new THREE.PointsMaterial({
-  size: 0.18,
+  size: 0.2,
   vertexColors: true,
   transparent: true,
   opacity: 0.85
@@ -127,10 +186,10 @@ universeGroup.add(cakeGroup);
 const plateGeo = new THREE.CylinderGeometry(3.6, 3.4, 0.25, 48);
 const plateMat = new THREE.MeshStandardMaterial({
   color: 0x1e1b4b,
-  metalness: 0.8,
+  metalness: 0.85,
   roughness: 0.2,
   emissive: 0x312e81,
-  emissiveIntensity: 0.2
+  emissiveIntensity: 0.25
 });
 const plate = new THREE.Mesh(plateGeo, plateMat);
 plate.position.y = -1.2;
@@ -147,7 +206,7 @@ cakeGroup.add(ringMesh);
 // Bottom Tier Cake
 const bottomGeo = new THREE.CylinderGeometry(2.8, 2.9, 1.4, 48);
 const bottomMat = new THREE.MeshStandardMaterial({
-  color: 0x2e1065, // Deep cosmic violet
+  color: 0x2e1065, // Cosmic violet
   roughness: 0.35,
   metalness: 0.15
 });
@@ -250,7 +309,7 @@ candlePositions.forEach((pos, idx) => {
   flame.add(innerFlame);
 
   // Point light for warmth
-  const candleLight = new THREE.PointLight(0xffa200, 1.5, 4);
+  const candleLight = new THREE.PointLight(0xffa200, 1.5, 4.5);
   candleLight.position.y = 1.2;
   candleHolder.add(candleLight);
   candleLights.push(candleLight);
@@ -258,6 +317,118 @@ candlePositions.forEach((pos, idx) => {
   cakeGroup.add(candleHolder);
   candles.push(candleHolder);
 });
+
+// ------------------------------------------
+// 3D FLOATING MEDIA GALLERY (Images & Videos)
+// ------------------------------------------
+const mediaGroup = new THREE.Group();
+universeGroup.add(mediaGroup);
+const mediaMeshes = [];
+const textureLoader = new THREE.TextureLoader();
+
+function createMediaGallery() {
+  // Clear existing meshes
+  while (mediaGroup.children.length > 0) {
+    mediaGroup.remove(mediaGroup.children[0]);
+  }
+  mediaMeshes.length = 0;
+
+  const count = mediaItems.length;
+  if (count === 0) return;
+
+  mediaItems.forEach((item, index) => {
+    const angle = (index / count) * Math.PI * 2;
+    const distance = 6.8;
+    const height = 1.0 + Math.sin(index * 2) * 1.2;
+
+    const frameHolder = new THREE.Group();
+    frameHolder.position.set(
+      Math.cos(angle) * distance,
+      height,
+      Math.sin(angle) * distance
+    );
+    // Face the center cake
+    frameHolder.lookAt(0, height, 0);
+    frameHolder.rotateY(Math.PI); // Orient texture forward
+
+    // Frame Outer Border (Glassmorphic metallic frame)
+    const frameBorderGeo = new THREE.BoxGeometry(2.3, 1.7, 0.08);
+    const frameBorderMat = new THREE.MeshStandardMaterial({
+      color: 0x312e81,
+      metalness: 0.85,
+      roughness: 0.2,
+      emissive: 0x4f46e5,
+      emissiveIntensity: 0.35
+    });
+    const frameBorder = new THREE.Mesh(frameBorderGeo, frameBorderMat);
+    frameHolder.add(frameBorder);
+
+    // Glowing Neon Rim
+    const rimGeo = new THREE.BoxGeometry(2.36, 1.76, 0.04);
+    const rimMat = new THREE.MeshBasicMaterial({
+      color: 0xec4899,
+      wireframe: true
+    });
+    const rim = new THREE.Mesh(rimGeo, rimMat);
+    frameHolder.add(rim);
+
+    // Picture or Video Screen Plane
+    const screenGeo = new THREE.PlaneGeometry(2.1, 1.5);
+    let screenMat;
+
+    if (item.type === "video") {
+      // Create HTML5 Video Element
+      const videoEl = document.createElement("video");
+      videoEl.src = item.url;
+      videoEl.crossOrigin = "anonymous";
+      videoEl.loop = true;
+      videoEl.muted = true;
+      videoEl.playsInline = true;
+      videoEl.setAttribute("webkit-playsinline", "true");
+      videoEl.play().catch(() => {});
+
+      const videoTex = new THREE.VideoTexture(videoEl);
+      videoTex.minFilter = THREE.LinearFilter;
+      videoTex.magFilter = THREE.LinearFilter;
+
+      screenMat = new THREE.MeshBasicMaterial({
+        map: videoTex,
+        side: THREE.DoubleSide
+      });
+    } else {
+      // Image Texture
+      const tex = textureLoader.load(item.url);
+      screenMat = new THREE.MeshBasicMaterial({
+        map: tex,
+        side: THREE.DoubleSide
+      });
+    }
+
+    const screenMesh = new THREE.Mesh(screenGeo, screenMat);
+    screenMesh.position.z = 0.045;
+    screenMesh.userData = { mediaItem: item };
+    frameHolder.add(screenMesh);
+    mediaMeshes.push(screenMesh);
+
+    // Floating Camera / Play Icon badge
+    const badgeGeo = new THREE.CircleGeometry(0.18, 16);
+    const badgeMat = new THREE.MeshBasicMaterial({
+      color: item.type === "video" ? 0xef4444 : 0x3b82f6,
+      side: THREE.DoubleSide
+    });
+    const badge = new THREE.Mesh(badgeGeo, badgeMat);
+    badge.position.set(0.9, -0.65, 0.05);
+    frameHolder.add(badge);
+
+    mediaGroup.add(frameHolder);
+  });
+
+  // Update memory badge
+  const memBadge = document.getElementById("memory-count-badge");
+  if (memBadge) memBadge.textContent = mediaItems.length;
+}
+
+createMediaGallery();
 
 // ------------------------------------------
 // Floating Wish Constellation (Orbiting Orbs)
@@ -278,8 +449,8 @@ function createWishOrbs() {
 
   wishes.forEach((w, index) => {
     const angle = (index / Math.max(wishes.length, 1)) * Math.PI * 2;
-    const distance = 4.2 + (index % 3) * 0.9;
-    const height = 0.5 + Math.sin(index * 1.5) * 1.8;
+    const distance = 4.4 + (index % 3) * 0.8;
+    const height = 0.6 + Math.sin(index * 1.5) * 1.8;
 
     const orbGroup = new THREE.Group();
     orbGroup.position.set(
@@ -289,7 +460,7 @@ function createWishOrbs() {
     );
 
     // Glowing Wish Star Sphere
-    const orbGeo = new THREE.SphereGeometry(0.3, 16, 16);
+    const orbGeo = new THREE.SphereGeometry(0.28, 16, 16);
     const orbMat = new THREE.MeshStandardMaterial({
       color: 0xfef08a,
       emissive: 0xf59e0b,
@@ -301,7 +472,7 @@ function createWishOrbs() {
     orbGroup.add(orb);
 
     // Halo Glow Ring
-    const haloGeo = new THREE.RingGeometry(0.35, 0.45, 24);
+    const haloGeo = new THREE.RingGeometry(0.32, 0.42, 24);
     const haloMat = new THREE.MeshBasicMaterial({
       color: 0xfbbf24,
       side: THREE.DoubleSide,
@@ -318,6 +489,9 @@ function createWishOrbs() {
   // Update badge count
   const countBadge = document.getElementById("wish-count-badge");
   if (countBadge) countBadge.textContent = wishes.length;
+
+  // Update Live Wish Ticker
+  updateLiveWishTicker();
 }
 
 createWishOrbs();
@@ -332,13 +506,13 @@ let targetRotationX = 0.15;
 let rotationSpeed = 0.005;
 
 window.addEventListener('mousedown', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('header') || e.target.closest('button')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button')) return;
   isDragging = true;
   previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
 window.addEventListener('touchstart', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('header') || e.target.closest('button')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('header') || e.target.closest('button')) return;
   if (e.touches.length === 1) {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -368,17 +542,30 @@ window.addEventListener('touchmove', (e) => {
 window.addEventListener('mouseup', () => isDragging = false);
 window.addEventListener('touchend', () => isDragging = false);
 
-// Click Raycasting on 3D Wish Stars
+// Click Raycasting on 3D Stars & 3D Media Frames
 window.addEventListener('click', (e) => {
   if (isDragging) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('button') || e.target.closest('input')) return;
+
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
 
   raycaster.setFromCamera(mouse, camera);
-  const intersects = raycaster.intersectObjects(wishOrbMeshes);
 
-  if (intersects.length > 0) {
-    const clickedWish = intersects[0].object.userData.wish;
+  // Check 3D Media Meshes first
+  const mediaIntersects = raycaster.intersectObjects(mediaMeshes);
+  if (mediaIntersects.length > 0) {
+    const clickedMedia = mediaIntersects[0].object.userData.mediaItem;
+    if (clickedMedia) {
+      showMediaInspect(clickedMedia);
+      return;
+    }
+  }
+
+  // Check 3D Wish Stars
+  const wishIntersects = raycaster.intersectObjects(wishOrbMeshes);
+  if (wishIntersects.length > 0) {
+    const clickedWish = wishIntersects[0].object.userData.wish;
     if (clickedWish) {
       showStarInspect(clickedWish);
     }
@@ -443,11 +630,27 @@ function playBellTone(freq = 520, duration = 0.8) {
   }
 }
 
+function playTickTone() {
+  if (!audioCtx) initAudio();
+  if (!audioCtx) return;
+  try {
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.08);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.08);
+  } catch (e) {}
+}
+
 function playBirthdayFanfare() {
   if (!audioCtx) initAudio();
   if (!audioCtx) return;
 
-  // Happy Birthday Chords (C, G, C, F, C, G, C)
   const notes = [
     { f: 261.63, d: 0.25 }, // C
     { f: 261.63, d: 0.25 }, // C
@@ -461,7 +664,6 @@ function playBirthdayFanfare() {
     { f: 261.63, d: 0.5 },  // C
     { f: 392.00, d: 0.5 },  // G
     { f: 349.23, d: 0.9 },  // F
-    // Big finish chords
     { f: 523.25, d: 1.2 }   // High C
   ];
 
@@ -564,29 +766,24 @@ function listenForBlow() {
   const dataArray = new Uint8Array(analyser.frequencyBinCount);
   analyser.getByteFrequencyData(dataArray);
 
-  // Blowing on a mic generates strong low-to-mid frequency turbulence (bins 2 to 24)
   let lowMidEnergy = 0;
   for (let i = 2; i < 24; i++) {
     lowMidEnergy += dataArray[i];
   }
-  const averageEnergy = lowMidEnergy / 22; // 0 to 255
+  const averageEnergy = lowMidEnergy / 22;
 
-  // Calculate wind intensity percentage
   const intensity = Math.min(100, Math.round((averageEnergy / 90) * 100));
   micMeterBar.style.width = `${intensity}%`;
   windPercentage.textContent = `${intensity}%`;
 
-  // Candle flame flicker reaction to wind
-  const flickerSpeed = 1 + (intensity / 30);
   candleFlames.forEach(f => {
     f.scale.x = 1 - (intensity / 180);
     f.scale.z = 1 - (intensity / 180);
   });
 
-  // Threshold check: high turbulence sustained
   if (averageEnergy > 70) {
     blowEnergyAccumulator += 1;
-    if (blowEnergyAccumulator > 8) { // Sustained puff
+    if (blowEnergyAccumulator > 8) {
       extinguishCandles("mic");
       return;
     }
@@ -597,31 +794,22 @@ function listenForBlow() {
   requestAnimationFrame(listenForBlow);
 }
 
-// Manual Blow Fallback Button
 manualBlowBtn.addEventListener("click", () => {
   initAudio();
-  // Animate the bar quickly to simulate blow
   micMeterBar.style.width = "100%";
   windPercentage.textContent = "100%";
   setTimeout(() => extinguishCandles("manual"), 250);
 });
 
-// ------------------------------------------
-// THE EXTINGUISH & CELEBRATION MOMENT
-// ------------------------------------------
 function extinguishCandles(triggerType = "manual") {
   if (candlesExtinguished) return;
   candlesExtinguished = true;
 
   // 1. Hide candle flames & dim lights
-  candleFlames.forEach(flame => {
-    flame.visible = false;
-  });
-  candleLights.forEach(light => {
-    light.intensity = 0;
-  });
+  candleFlames.forEach(flame => flame.visible = false);
+  candleLights.forEach(light => light.intensity = 0);
 
-  // 2. Spawn Rising 3D Smoke Particles
+  // 2. Rising 3D Smoke Particles
   spawnSmokeParticles();
 
   // 3. Status update
@@ -644,7 +832,6 @@ function extinguishCandles(triggerType = "manual") {
 }
 
 function spawnSmokeParticles() {
-  const smokeCount = 45;
   const smokeGeo = new THREE.SphereGeometry(0.08, 8, 8);
   const smokeMat = new THREE.MeshBasicMaterial({
     color: 0x94a3b8,
@@ -672,10 +859,8 @@ function spawnSmokeParticles() {
 }
 
 function launchCelebrationConfetti() {
-  // Fire multiple bursts of confetti from left, right, and center
   const duration = 4.5 * 1000;
   const animationEnd = Date.now() + duration;
-
   const defaults = { startVelocity: 35, spread: 360, ticks: 70, zIndex: 1000 };
 
   function randomInRange(min, max) {
@@ -689,15 +874,13 @@ function launchCelebrationConfetti() {
     }
 
     const particleCount = 50 * (timeLeft / duration);
-    // Cannons from left and right edges
     confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
     confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
   }, 250);
 
-  // Central Gold and Purple Star Burst
   confetti({
-    particleCount: 100,
-    spread: 100,
+    particleCount: 110,
+    spread: 110,
     origin: { y: 0.6 },
     colors: ['#f59e0b', '#ec4899', '#8b5cf6', '#38bdf8', '#ffffff']
   });
@@ -712,12 +895,10 @@ relightBtn.addEventListener("click", () => {
     flame.visible = true;
     flame.scale.set(1, 1, 1);
   });
-  candleLights.forEach(light => {
-    light.intensity = 1.5;
-  });
+  candleLights.forEach(light => light.intensity = 1.5);
 
   statusText.textContent = "Candles relit! Ready to blow again! 🎂";
-  statusPill.className = "pointer-events-auto inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium mb-2 animate-bounce-slow";
+  statusPill.className = "pointer-events-auto inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium mb-1.5 animate-bounce-slow";
 
   relightBtn.classList.add("hidden");
   micTriggerBtn.classList.remove("hidden");
@@ -729,7 +910,425 @@ relightBtn.addEventListener("click", () => {
 });
 
 // ==========================================
-// 6. WISH SYSTEM & WHATSAPP GENERATION
+// 6. TIMED LIVE EVENT & PRESENCE ENGINE
+// ==========================================
+const countdownTimerDisplay = document.getElementById("countdown-timer-display");
+const livePresenceCount = document.getElementById("live-presence-count");
+const liveEventOverlay = document.getElementById("live-event-overlay");
+const liveSyncCountdown = document.getElementById("live-sync-countdown");
+const dismissLiveOverlayBtn = document.getElementById("dismiss-live-overlay-btn");
+
+let liveCelebrationTriggered = false;
+
+// Presence Simulator with dynamic lifelike variance
+let simulatedLovelies = 23;
+setInterval(() => {
+  const delta = (Math.random() > 0.45 ? 1 : -1) * (Math.floor(Math.random() * 2));
+  simulatedLovelies = Math.max(12, Math.min(84, simulatedLovelies + delta));
+  if (livePresenceCount) livePresenceCount.textContent = simulatedLovelies;
+}, 3500);
+
+function updateLiveCountdown() {
+  const target = new Date(SIKADEV_CONFIG.liveCelebrationTime).getTime();
+  const now = Date.now();
+  const diff = target - now;
+
+  if (diff <= 0) {
+    countdownTimerDisplay.textContent = "00:00:00 (LIVE NOW!)";
+    countdownTimerDisplay.classList.add("text-rose-400", "animate-pulse");
+    
+    if (!liveCelebrationTriggered) {
+      triggerSynchronizedLiveCelebration();
+    }
+    return;
+  }
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+  const pad = (n) => String(n).padStart(2, '0');
+  countdownTimerDisplay.textContent = `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
+
+setInterval(updateLiveCountdown, 1000);
+updateLiveCountdown();
+
+// Trigger the 10-second countdown synchronized event
+function triggerSynchronizedLiveCelebration() {
+  liveCelebrationTriggered = true;
+  initAudio();
+  liveEventOverlay.classList.add("active");
+
+  let count = 10;
+  liveSyncCountdown.textContent = count;
+  playTickTone();
+
+  const syncTimer = setInterval(() => {
+    count--;
+    if (count > 0) {
+      liveSyncCountdown.textContent = count;
+      playTickTone();
+    } else {
+      clearInterval(syncTimer);
+      liveSyncCountdown.textContent = "BLOW! 🎂💨";
+      // Auto-blow candles & erupt celebration
+      setTimeout(() => {
+        liveEventOverlay.classList.remove("active");
+        extinguishCandles("live");
+      }, 900);
+    }
+  }, 1000);
+}
+
+dismissLiveOverlayBtn.addEventListener("click", () => {
+  liveEventOverlay.classList.remove("active");
+  extinguishCandles("manual");
+});
+
+// ------------------------------------------
+// LIVE WISH TICKER BAR
+// ------------------------------------------
+function updateLiveWishTicker() {
+  const ticker = document.getElementById("ticker-content");
+  if (!ticker) return;
+
+  const tickerText = wishes.map(w => `🌟 "${w.message}" — ${w.name} (${w.vibe})`).join("  •  ");
+  ticker.textContent = tickerText + "  •  " + tickerText; // Double for continuous loop
+}
+
+// ==========================================
+// 7. 3D MEDIA INSPECTION MODAL
+// ==========================================
+const mediaInspectModal = document.getElementById("media-inspect-modal");
+const closeMediaInspectBtn = document.getElementById("close-media-inspect-btn");
+const inspectMediaDisplay = document.getElementById("inspect-media-display");
+const inspectMediaTitle = document.getElementById("inspect-media-title");
+const inspectMediaCaption = document.getElementById("inspect-media-caption");
+const inspectMediaTag = document.getElementById("inspect-media-tag");
+const likeMemoryBtn = document.getElementById("like-memory-btn");
+const memoryLikesCount = document.getElementById("memory-likes-count");
+
+let currentInspectedMedia = null;
+
+function showMediaInspect(media) {
+  currentInspectedMedia = media;
+  inspectMediaTitle.textContent = media.title;
+  inspectMediaCaption.textContent = media.caption;
+  inspectMediaTag.textContent = media.type === "video" ? "🎥 Video Memory" : "📸 Photo Memory";
+  memoryLikesCount.textContent = `${media.likes || 42} Loves`;
+
+  inspectMediaDisplay.innerHTML = "";
+  if (media.type === "video") {
+    const video = document.createElement("video");
+    video.src = media.url;
+    video.controls = true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.className = "w-full max-h-[380px] object-contain rounded-xl";
+    inspectMediaDisplay.appendChild(video);
+  } else {
+    const img = document.createElement("img");
+    img.src = media.url;
+    img.alt = media.title;
+    img.className = "w-full max-h-[380px] object-contain rounded-xl";
+    inspectMediaDisplay.appendChild(img);
+  }
+
+  mediaInspectModal.classList.add("active");
+  playBellTone(640);
+}
+
+closeMediaInspectBtn.addEventListener("click", () => {
+  mediaInspectModal.classList.remove("active");
+  // Pause any video inside
+  const vid = inspectMediaDisplay.querySelector("video");
+  if (vid) vid.pause();
+});
+
+likeMemoryBtn.addEventListener("click", () => {
+  if (!currentInspectedMedia) return;
+  currentInspectedMedia.likes = (currentInspectedMedia.likes || 42) + 1;
+  memoryLikesCount.textContent = `${currentInspectedMedia.likes} Loves`;
+  confetti({ particleCount: 30, spread: 60, origin: { y: 0.6 } });
+  playBellTone(880);
+});
+
+// View all 3D Media shortcut button
+document.getElementById("view-memories-btn").addEventListener("click", () => {
+  if (mediaItems.length > 0) {
+    showMediaInspect(mediaItems[0]);
+  } else {
+    alert("No 3D media added yet! Tap the Admin button to add your photos and videos.");
+  }
+});
+
+// ==========================================
+// 8. ADMIN STUDIO (Passcode, Media & Scheduler)
+// ==========================================
+const adminModal = document.getElementById("admin-modal");
+const adminTriggerBtn = document.getElementById("admin-trigger-btn");
+const closeAdminModalBtn = document.getElementById("close-admin-modal-btn");
+const adminAuthScreen = document.getElementById("admin-auth-screen");
+const adminDashboardScreen = document.getElementById("admin-dashboard-screen");
+const adminPinInput = document.getElementById("admin-pin-input");
+const adminLoginBtn = document.getElementById("admin-login-btn");
+const adminLogoutBtn = document.getElementById("admin-logout-btn");
+
+// Secret Triple-click on brand logo to open admin
+let logoClickCount = 0;
+let logoTimer = null;
+document.getElementById("brand-logo").addEventListener("click", () => {
+  logoClickCount++;
+  clearTimeout(logoTimer);
+  logoTimer = setTimeout(() => { logoClickCount = 0; }, 800);
+  if (logoClickCount >= 3) {
+    logoClickCount = 0;
+    openAdminModal();
+  }
+});
+
+// Keyboard shortcut: Alt + A
+window.addEventListener("keydown", (e) => {
+  if (e.altKey && (e.key === "a" || e.key === "A")) {
+    openAdminModal();
+  }
+});
+
+adminTriggerBtn.addEventListener("click", openAdminModal);
+
+function openAdminModal() {
+  adminModal.classList.add("active");
+  adminPinInput.value = "";
+  adminPinInput.focus();
+}
+
+closeAdminModalBtn.addEventListener("click", () => {
+  adminModal.classList.remove("active");
+});
+
+adminLoginBtn.addEventListener("click", () => {
+  const enteredPin = adminPinInput.value.trim();
+  if (enteredPin === SIKADEV_CONFIG.adminPin) {
+    adminAuthScreen.classList.add("hidden");
+    adminDashboardScreen.classList.remove("hidden");
+    loadAdminDashboard();
+    playBellTone(800);
+  } else {
+    alert("Incorrect passcode! Default is 2026.");
+    adminPinInput.value = "";
+  }
+});
+
+adminPinInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") adminLoginBtn.click();
+});
+
+adminLogoutBtn.addEventListener("click", () => {
+  adminDashboardScreen.classList.add("hidden");
+  adminAuthScreen.classList.remove("hidden");
+});
+
+// Admin Tabs
+const tabMediaBtn = document.getElementById("tab-media-btn");
+const tabEventBtn = document.getElementById("tab-event-btn");
+const tabSettingsBtn = document.getElementById("tab-settings-btn");
+const adminTabMedia = document.getElementById("admin-tab-media");
+const adminTabEvent = document.getElementById("admin-tab-event");
+const adminTabSettings = document.getElementById("admin-tab-settings");
+
+function switchAdminTab(activeTab, activeBtn) {
+  [adminTabMedia, adminTabEvent, adminTabSettings].forEach(t => t.classList.add("hidden"));
+  [tabMediaBtn, tabEventBtn, tabSettingsBtn].forEach(b => {
+    b.classList.remove("active", "bg-amber-500/20", "border-amber-400/40", "text-amber-300");
+    b.classList.add("bg-white/5", "border-white/10", "text-gray-300");
+  });
+
+  activeTab.classList.remove("hidden");
+  activeBtn.classList.add("active", "bg-amber-500/20", "border-amber-400/40", "text-amber-300");
+  activeBtn.classList.remove("bg-white/5", "border-white/10", "text-gray-300");
+}
+
+tabMediaBtn.addEventListener("click", () => switchAdminTab(adminTabMedia, tabMediaBtn));
+tabEventBtn.addEventListener("click", () => switchAdminTab(adminTabEvent, tabEventBtn));
+tabSettingsBtn.addEventListener("click", () => switchAdminTab(adminTabSettings, tabSettingsBtn));
+
+// Load Admin Dashboard
+function loadAdminDashboard() {
+  // Populate Media List
+  renderAdminMediaList();
+
+  // Populate Event Scheduler Time
+  const eventDateTimeInput = document.getElementById("event-datetime-input");
+  const currentScheduled = new Date(SIKADEV_CONFIG.liveCelebrationTime);
+  // Format for datetime-local (YYYY-MM-DDTHH:MM)
+  const offset = currentScheduled.getTimezoneOffset() * 60000;
+  const localISOTime = (new Date(currentScheduled - offset)).toISOString().slice(0, 16);
+  eventDateTimeInput.value = localISOTime;
+
+  // Populate Phone
+  document.getElementById("admin-phone-input").value = SIKADEV_CONFIG.defaultPhone;
+}
+
+function renderAdminMediaList() {
+  const list = document.getElementById("admin-media-list");
+  const countSpan = document.getElementById("admin-media-count");
+  list.innerHTML = "";
+  countSpan.textContent = mediaItems.length;
+
+  if (mediaItems.length === 0) {
+    list.innerHTML = `<p class="text-xs text-gray-400">No media uploaded yet.</p>`;
+    return;
+  }
+
+  mediaItems.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-black/40 border border-white/10 text-xs";
+    row.innerHTML = `
+      <div class="flex items-center space-x-2.5 truncate">
+        <span class="text-base">${item.type === "video" ? "🎥" : "📸"}</span>
+        <div class="truncate">
+          <p class="font-bold text-white truncate">${escapeHtml(item.title)}</p>
+          <p class="text-[10px] text-gray-400 truncate">${escapeHtml(item.caption || '')}</p>
+        </div>
+      </div>
+      <button class="delete-media-btn text-rose-400 hover:text-rose-300 px-2 py-1 bg-rose-500/10 rounded-lg shrink-0 ml-2" data-index="${index}">
+        🗑️ Delete
+      </button>
+    `;
+    list.appendChild(row);
+  });
+
+  list.querySelectorAll(".delete-media-btn").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      const idx = parseInt(btn.getAttribute("data-index"));
+      mediaItems.splice(idx, 1);
+      localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
+      createMediaGallery();
+      renderAdminMediaList();
+    });
+  });
+}
+
+// Add Media Handler
+const addMediaForm = document.getElementById("add-media-form");
+const mediaFileInput = document.getElementById("media-file-input");
+const mediaUrlInput = document.getElementById("media-url-input");
+
+mediaFileInput.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    mediaUrlInput.value = evt.target.result; // Data URL
+  };
+  reader.readAsDataURL(file);
+});
+
+addMediaForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const title = document.getElementById("media-title-input").value.trim();
+  const type = document.getElementById("media-type-input").value;
+  const url = mediaUrlInput.value.trim();
+  const caption = document.getElementById("media-caption-input").value.trim();
+
+  if (!url) {
+    alert("Please upload a file or paste an image/video URL!");
+    return;
+  }
+
+  const newMedia = {
+    id: Date.now(),
+    title: title,
+    type: type,
+    url: url,
+    caption: caption,
+    likes: 1,
+    date: "Just added"
+  };
+
+  mediaItems.unshift(newMedia);
+  try {
+    localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
+  } catch (err) {
+    console.warn("Storage quota warning", err);
+  }
+
+  // Update 3D scene immediately
+  createMediaGallery();
+  renderAdminMediaList();
+
+  // Reset form
+  addMediaForm.reset();
+  confetti({ particleCount: 40, spread: 60 });
+  alert("✨ Memory added into Sikadev's 3D Orbit Sky!");
+});
+
+// Event Scheduler Quick Buttons
+document.getElementById("set-midnight-btn").addEventListener("click", () => {
+  const target = new Date();
+  target.setHours(24, 0, 0, 0); // Midnight tonight
+  setEventInputDate(target);
+});
+
+document.getElementById("set-1hour-btn").addEventListener("click", () => {
+  const target = new Date(Date.now() + 60 * 60 * 1000);
+  setEventInputDate(target);
+});
+
+document.getElementById("set-tomorrow-noon-btn").addEventListener("click", () => {
+  const target = new Date();
+  target.setDate(target.getDate() + 1);
+  target.setHours(12, 0, 0, 0);
+  setEventInputDate(target);
+});
+
+function setEventInputDate(date) {
+  const offset = date.getTimezoneOffset() * 60000;
+  const localISOTime = (new Date(date - offset)).toISOString().slice(0, 16);
+  document.getElementById("event-datetime-input").value = localISOTime;
+}
+
+document.getElementById("save-event-time-btn").addEventListener("click", () => {
+  const val = document.getElementById("event-datetime-input").value;
+  if (!val) return;
+  const targetDate = new Date(val);
+  SIKADEV_CONFIG.liveCelebrationTime = targetDate.toISOString();
+  localStorage.setItem("sikadev_live_time", SIKADEV_CONFIG.liveCelebrationTime);
+  liveCelebrationTriggered = false; // Reset trigger
+  updateLiveCountdown();
+  alert(`⏰ Live Celebration set for: ${targetDate.toLocaleString()}`);
+});
+
+// Force Live Celebration Now (Test button)
+document.getElementById("force-live-now-btn").addEventListener("click", () => {
+  adminModal.classList.remove("active");
+  triggerSynchronizedLiveCelebration();
+});
+
+// Save WhatsApp Phone
+document.getElementById("save-phone-btn").addEventListener("click", () => {
+  const phone = document.getElementById("admin-phone-input").value.trim();
+  SIKADEV_CONFIG.defaultPhone = phone;
+  localStorage.setItem("sikadev_phone", phone);
+  alert("📲 WhatsApp phone number saved!");
+});
+
+// Update PIN
+document.getElementById("save-pin-btn").addEventListener("click", () => {
+  const newPin = document.getElementById("admin-new-pin-input").value.trim();
+  if (newPin.length < 4) {
+    alert("PIN must be at least 4 digits.");
+    return;
+  }
+  SIKADEV_CONFIG.adminPin = newPin;
+  localStorage.setItem("sikadev_admin_pin", newPin);
+  alert("🔐 Admin passcode updated!");
+});
+
+// ==========================================
+// 9. WISH SYSTEM & WHATSAPP GENERATION
 // ==========================================
 const wishModal = document.getElementById("wish-modal");
 const openWishModalBtn = document.getElementById("open-wish-modal-btn");
@@ -740,7 +1339,6 @@ const quickShareBtn = document.getElementById("quick-share-btn");
 
 let selectedVibe = "👑 The GOAT";
 
-// Vibe Button Clicker
 document.querySelectorAll(".vibe-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".vibe-btn").forEach(b => {
@@ -764,8 +1362,7 @@ closeWishModalBtn.addEventListener("click", () => {
   wishModal.classList.remove("active");
 });
 
-// Format and construct WhatsApp Direct Deep Link
-function buildWhatsAppWishUrl(name, message, vibe, targetPhone) {
+function buildWhatsAppWishUrl(name, message, vibe) {
   const formattedText = 
 `🎂 *HAPPY BIRTHDAY SIKADEV!* 🎉✨
 
@@ -775,39 +1372,32 @@ function buildWhatsAppWishUrl(name, message, vibe, targetPhone) {
 🌟 *Vibe:* ${vibe}
 
 🎈 *Sent via your 3D Birthday Universe!*
-🚀 https://sikadev-birthday.web.app`;
+🚀 ${window.location.href}`;
 
-  const cleanPhone = (targetPhone || SIKADEV_CONFIG.defaultPhone).replace(/[^0-9]/g, '');
+  const cleanPhone = (SIKADEV_CONFIG.defaultPhone || "").replace(/[^0-9]/g, '');
   if (cleanPhone) {
     return `https://wa.me/${cleanPhone}?text=${encodeURIComponent(formattedText)}`;
   } else {
-    // If no phone configured, opens WhatsApp recipient picker
     return `https://api.whatsapp.com/send?text=${encodeURIComponent(formattedText)}`;
   }
 }
 
-// Send Directly via WhatsApp
 submitWhatsAppBtn.addEventListener("click", () => {
   const nameInput = document.getElementById("sender-name");
   const msgInput = document.getElementById("sender-message");
-  const phoneInput = document.getElementById("target-phone");
 
   const name = nameInput.value.trim() || "A Lovely Friend";
   const message = msgInput.value.trim() || "Happy Birthday Sikadev! Wishing you happiness, health, and greatness! 🚀";
-  const phone = phoneInput ? phoneInput.value.trim() : "";
 
-  // Also save to 3D sky!
   saveWishLocally(name, message, selectedVibe);
 
-  // Open WhatsApp
-  const url = buildWhatsAppWishUrl(name, message, selectedVibe, phone);
+  const url = buildWhatsAppWishUrl(name, message, selectedVibe);
   window.open(url, "_blank");
 
   wishModal.classList.remove("active");
   confetti({ particleCount: 60, spread: 80, origin: { y: 0.7 } });
 });
 
-// Pin to 3D Sky Submit
 wishForm.addEventListener("submit", (e) => {
   e.preventDefault();
   const nameInput = document.getElementById("sender-name");
@@ -818,12 +1408,10 @@ wishForm.addEventListener("submit", (e) => {
 
   saveWishLocally(name, message, selectedVibe);
 
-  // Clear inputs & close
   nameInput.value = "";
   msgInput.value = "";
   wishModal.classList.remove("active");
 
-  // Visual fanfare
   confetti({ particleCount: 70, spread: 90, origin: { y: 0.6 } });
   statusText.textContent = `🌟 ${name}'s wish pinned into Sikadev's 3D Sky!`;
   playBellTone(784);
@@ -896,15 +1484,13 @@ function escapeHtml(str) {
   }[tag] || tag));
 }
 
-// ------------------------------------------
-// VIRAL WHATSAPP SHARE BUTTON
-// ------------------------------------------
+// WhatsApp Share URL
 quickShareBtn.addEventListener("click", () => {
   const currentUrl = window.location.href;
   const shareText = 
 `🎂 *Celebrate Sikadev's Birthday in 3D!* 🎉✨
 
-Blow out the digital candles using your microphone & pin your birthday wish onto Sikadev's 3D Universe:
+Blow out the digital candles using your microphone, view 3D memories & join our live celebration:
 👉 ${currentUrl}`;
 
   const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -912,7 +1498,7 @@ Blow out the digital candles using your microphone & pin your birthday wish onto
 });
 
 // ==========================================
-// 7. MAIN ANIMATION LOOP
+// 10. MAIN ANIMATION LOOP
 // ==========================================
 let clock = new THREE.Clock();
 
@@ -922,17 +1508,17 @@ function animate() {
   const delta = clock.getDelta();
   const elapsedTime = clock.getElapsedTime();
 
-  // Smooth rotation interpolation
+  // Smooth rotation
   universeGroup.rotation.y += (targetRotationY - universeGroup.rotation.y) * 0.08;
   cakeGroup.rotation.x += (targetRotationX - cakeGroup.rotation.x) * 0.08;
 
-  // Gentle idle ambient spin
+  // Gentle ambient spin
   if (!isDragging) {
-    targetRotationY += 0.002;
+    targetRotationY += 0.0018;
   }
 
-  // Starfield gentle cosmic drift
-  stars.rotation.y = elapsedTime * 0.015;
+  // Starfield drift
+  stars.rotation.y = elapsedTime * 0.012;
 
   // Candle Flames Dynamic Flickering
   if (!candlesExtinguished) {
@@ -948,7 +1534,7 @@ function animate() {
     });
   }
 
-  // Animate rising smoke puffs if any
+  // Animate rising smoke puffs
   for (let i = smokePuffs.length - 1; i >= 0; i--) {
     const puff = smokePuffs[i];
     puff.position.y += puff.userData.vy;
@@ -963,10 +1549,15 @@ function animate() {
     }
   }
 
-  // Animate Floating Wish Orbs (gentle hovering wave)
+  // Animate Floating Wish Orbs
   wishOrbsGroup.children.forEach((orbGroup, idx) => {
     orbGroup.position.y += Math.sin(elapsedTime * 2 + idx) * 0.003;
-    orbGroup.rotation.y = elapsedTime * 0.5;
+    orbGroup.rotation.y = elapsedTime * 0.4;
+  });
+
+  // Animate 3D Media Frames gentle hovering wave
+  mediaGroup.children.forEach((frameGroup, idx) => {
+    frameGroup.position.y += Math.sin(elapsedTime * 1.5 + idx * 2) * 0.0025;
   });
 
   renderer.render(scene, camera);

@@ -7,10 +7,10 @@
   
   <!-- OpenGraph / WhatsApp Link Preview -->
   <meta property="og:title" content="🎂 Celebrate Sikadev's Birthday in 3D! 🎉" />
-  <meta property="og:description" content="Blow out the digital candles using your microphone & leave a birthday wish for Sikadev! ✨" />
+  <meta property="og:description" content="Blow out the digital candles using your microphone, view 3D memories & leave a birthday wish for Sikadev! ✨" />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#8b5cf6" />
-  <meta name="description" content="Interactive 3D Birthday Universe for Sikadev. Blow out the candles with your mic, enjoy confetti, and drop a birthday wish!" />
+  <meta name="description" content="Interactive 3D Birthday Universe for Sikadev. Blow out the candles with your mic, enjoy confetti, explore 3D memories, and join the live event!" />
 
   <!-- Google Fonts & Tailwind CDN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -35,8 +35,8 @@
   <div class="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-black/60"></div>
 
   <!-- Main Floating Header & Navigation -->
-  <header class="relative z-10 w-full max-w-4xl mx-auto px-4 pt-4 sm:pt-6 flex items-center justify-between pointer-events-auto">
-    <div class="flex items-center space-x-3">
+  <header class="relative z-10 w-full max-w-4xl mx-auto px-4 pt-3 sm:pt-5 flex items-center justify-between pointer-events-auto">
+    <div class="flex items-center space-x-3 cursor-pointer" id="brand-logo" title="Sikadev's Birthday Hub (Triple click for Admin)">
       <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-purple-600 via-pink-500 to-amber-400 p-[2px] shadow-lg shadow-purple-500/30 flex items-center justify-center">
         <div class="w-full h-full bg-[#0d0f22] rounded-[14px] flex items-center justify-center text-lg">
           🎂
@@ -63,34 +63,59 @@
         <span>📲</span>
         <span class="hidden sm:inline">Share</span>
       </button>
+
+      <!-- Admin Dashboard Button -->
+      <button id="admin-trigger-btn" class="glass-pill p-2 sm:px-3 sm:py-2 rounded-full flex items-center space-x-1.5 text-xs text-purple-200 hover:text-amber-300 border-amber-400/30 transition-all active:scale-95" title="Sikadev Admin Studio">
+        <span>⚙️</span>
+        <span class="hidden md:inline font-semibold">Admin</span>
+      </button>
     </div>
   </header>
 
+  <!-- Live Countdown & Presence Ribbon -->
+  <div id="live-countdown-banner" class="relative z-10 w-full max-w-xl mx-auto px-4 mt-2 pointer-events-auto">
+    <div class="flex items-center justify-between px-3.5 py-2 rounded-2xl bg-indigo-950/70 border border-indigo-400/30 backdrop-blur-md shadow-xl text-xs">
+      <div class="flex items-center space-x-2">
+        <span class="relative flex h-2.5 w-2.5">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+        </span>
+        <span class="font-bold text-amber-300 text-[11px] sm:text-xs tracking-wide uppercase" id="countdown-label">LIVE CELEBRATION IN:</span>
+        <span id="countdown-timer-display" class="font-mono font-black text-white text-xs sm:text-sm tracking-wider bg-black/40 px-2 py-0.5 rounded-lg border border-white/10">00:00:00</span>
+      </div>
+      <div class="flex items-center space-x-1.5 text-purple-200 text-[11px] sm:text-xs">
+        <span>👥</span>
+        <span id="live-presence-count" class="font-black text-emerald-400">19</span>
+        <span class="hidden sm:inline text-purple-300/80">Lovelies</span>
+      </div>
+    </div>
+  </div>
+
   <!-- Interactive Center Stage Overlay -->
-  <main class="relative z-10 w-full max-w-xl mx-auto px-4 mt-2 sm:mt-4 flex flex-col items-center text-center pointer-events-none">
+  <main class="relative z-10 w-full max-w-xl mx-auto px-4 mt-2 sm:mt-3 flex flex-col items-center text-center pointer-events-none">
     
     <!-- Celebration Badge / Status -->
-    <div id="status-pill" class="pointer-events-auto inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium mb-2 animate-bounce-slow">
+    <div id="status-pill" class="pointer-events-auto inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium mb-1.5 animate-bounce-slow">
       <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
       <span id="status-text">Blow into mic or tap the button to blow candles!</span>
     </div>
 
     <!-- Title & Greeting -->
-    <div class="pointer-events-none mb-2">
+    <div class="pointer-events-none mb-1">
       <h2 class="text-3xl sm:text-5xl font-black font-['Outfit'] tracking-tight leading-tight">
         Happy Birthday, <br class="sm:hidden" />
         <span class="bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(236,72,153,0.35)]">
           Sikadev! 🎉
         </span>
       </h2>
-      <p class="text-xs sm:text-sm text-purple-200/80 max-w-md mx-auto mt-1 sm:mt-2">
-        To all my lovelies: drag the 3D cake, blow out the candles, and pin your wish onto my cosmic wish sky! ✨
+      <p class="text-xs sm:text-sm text-purple-200/80 max-w-md mx-auto mt-1">
+        To all my lovelies: explore 3D memories, blow out the candles, and join the live celebration! ✨
       </p>
     </div>
 
     <!-- Real-time Breath / Wind Level Meter -->
-    <div id="mic-meter-container" class="pointer-events-auto w-full max-w-xs bg-black/40 backdrop-blur-md border border-purple-500/20 rounded-2xl p-3 my-2 shadow-2xl transition-all duration-300">
-      <div class="flex items-center justify-between text-xs font-semibold text-purple-300 mb-1.5">
+    <div id="mic-meter-container" class="pointer-events-auto w-full max-w-xs bg-black/40 backdrop-blur-md border border-purple-500/20 rounded-2xl p-2.5 my-1.5 shadow-2xl transition-all duration-300">
+      <div class="flex items-center justify-between text-xs font-semibold text-purple-300 mb-1">
         <span class="flex items-center space-x-1.5">
           <span id="mic-status-dot" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
           <span>Mic Wind Meter</span>
@@ -103,46 +128,284 @@
     </div>
 
     <!-- Action Buttons Row -->
-    <div class="pointer-events-auto flex flex-wrap items-center justify-center gap-2.5 mt-2 w-full max-w-md">
+    <div class="pointer-events-auto flex flex-wrap items-center justify-center gap-2 mt-1 w-full max-w-md">
       
       <!-- Mic Activation Button -->
-      <button id="mic-trigger-btn" class="flex-1 min-w-[140px] px-4 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 flex items-center justify-center space-x-2 transition-all transform hover:-translate-y-0.5 active:scale-95">
+      <button id="mic-trigger-btn" class="flex-1 min-w-[130px] px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-purple-600/30 flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95">
         <span class="text-base" id="mic-btn-icon">🎙️</span>
         <span id="mic-btn-text">Enable Mic to Blow</span>
       </button>
 
       <!-- Manual Blow Button (No Mic Fallback) -->
-      <button id="manual-blow-btn" class="px-4 py-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-white font-bold text-sm flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 shadow-md">
+      <button id="manual-blow-btn" class="px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-white font-bold text-xs sm:text-sm flex items-center justify-center space-x-1 transition-all transform hover:-translate-y-0.5 active:scale-95 shadow-md">
         <span>💨</span>
         <span>Tap to Blow</span>
       </button>
 
       <!-- Relight Button (Hidden initially) -->
-      <button id="relight-btn" class="hidden px-4 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-sm flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 shadow-lg shadow-amber-500/30">
+      <button id="relight-btn" class="hidden px-4 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95 shadow-lg shadow-amber-500/30">
         <span>🔥</span>
         <span>Relight Candles</span>
       </button>
     </div>
 
-    <!-- Wish & WhatsApp Action Hub -->
-    <div class="pointer-events-auto flex items-center justify-center gap-3 mt-3 w-full max-w-md">
-      <button id="open-wish-modal-btn" class="flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black font-extrabold text-sm shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-2 transition-all transform hover:-translate-y-0.5 active:scale-95">
+    <!-- Wish, Memories & Drawer Buttons Row -->
+    <div class="pointer-events-auto flex items-center justify-center gap-2 mt-2 w-full max-w-md">
+      <button id="open-wish-modal-btn" class="flex-1 py-2.5 px-3 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95">
         <span>✨</span>
-        <span>Leave a Birthday Wish</span>
+        <span>Send a Wish</span>
       </button>
 
-      <button id="view-wishes-btn" class="py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-purple-200 hover:text-white font-semibold text-sm flex items-center justify-center space-x-2 transition-all active:scale-95">
+      <!-- Memories Button -->
+      <button id="view-memories-btn" class="py-2.5 px-3 rounded-2xl bg-indigo-900/50 hover:bg-indigo-800/60 border border-indigo-400/30 backdrop-blur-md text-indigo-200 hover:text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all active:scale-95">
+        <span>📸</span>
+        <span>3D Media (<span id="memory-count-badge">0</span>)</span>
+      </button>
+
+      <!-- Wishes List Button -->
+      <button id="view-wishes-btn" class="py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 backdrop-blur-md text-purple-200 hover:text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all active:scale-95">
         <span>💌</span>
         <span>Wishes (<span id="wish-count-badge">0</span>)</span>
       </button>
     </div>
 
     <!-- 3D Orbit Tip -->
-    <div class="pointer-events-none mt-2 text-[11px] text-purple-300/50 flex items-center space-x-1">
+    <div class="pointer-events-none mt-2 text-[10px] sm:text-[11px] text-purple-300/50 flex items-center space-x-1">
       <span>👆</span>
-      <span>Swipe or drag anywhere to rotate the 3D cake & wish constellation</span>
+      <span>Swipe to orbit the 3D cake • Tap floating photo frames & stars</span>
     </div>
   </main>
+
+  <!-- LIVE CELEBRATION FULLSCREEN OVERLAY (When timer triggers or admin starts) -->
+  <div id="live-event-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-black/85 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-500 text-center">
+    <div class="relative max-w-lg w-full p-8 rounded-3xl bg-gradient-to-b from-purple-950/90 to-[#0e1026] border-2 border-amber-400/80 shadow-[0_0_80px_rgba(245,158,11,0.4)]">
+      <div class="text-5xl sm:text-6xl mb-3 animate-bounce">🎂🎉🚀</div>
+      <div class="inline-block px-4 py-1 rounded-full bg-rose-500 text-white font-black text-xs tracking-widest uppercase mb-3 animate-pulse">
+        LIVE CELEBRATION MOMENT
+      </div>
+      <h2 class="text-3xl sm:text-5xl font-black font-['Outfit'] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-purple-300">
+        IT'S SIKADEV'S TIME!
+      </h2>
+      <p class="text-sm text-purple-200 mt-2">
+        All connected Lovelies are celebrating right now! Get ready to blow out the candles together!
+      </p>
+
+      <!-- Big Synchronized Countdown Number -->
+      <div id="live-sync-countdown" class="my-6 text-7xl sm:text-8xl font-black font-['Outfit'] text-amber-300 drop-shadow-[0_0_30px_rgba(245,158,11,0.8)]">
+        10
+      </div>
+
+      <button id="dismiss-live-overlay-btn" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-500 text-black font-black text-sm shadow-xl hover:brightness-110 active:scale-95 transition-all">
+        JOIN THE CELEBRATION! 🎊
+      </button>
+    </div>
+  </div>
+
+  <!-- LIVE WISH TICKER BAR (Bottom screen ticker) -->
+  <div id="live-wish-ticker" class="fixed bottom-0 inset-x-0 z-30 bg-[#0a0c1b]/80 backdrop-blur-md border-t border-purple-500/20 py-1.5 px-4 overflow-hidden flex items-center">
+    <div class="flex items-center space-x-2 shrink-0 pr-3 border-r border-white/10 text-xs font-bold text-amber-300">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span>LIVE WISHES</span>
+    </div>
+    <div class="overflow-hidden whitespace-nowrap w-full ml-3">
+      <div id="ticker-content" class="inline-block text-xs text-purple-200 font-medium animate-marquee">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 3D MEDIA INSPECTION MODAL (When clicking a 3D photo or video) -->
+  <div id="media-inspect-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg opacity-0 pointer-events-none transition-all duration-300">
+    <div class="relative w-full max-w-xl bg-[#0e1026] border border-indigo-400/40 rounded-3xl p-6 shadow-2xl text-left transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+      <button id="close-media-inspect-btn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
+      
+      <div class="flex items-center space-x-2 mb-3">
+        <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 font-bold" id="inspect-media-tag">📸 Memory</span>
+        <span class="text-xs text-gray-400" id="inspect-media-date">2026</span>
+      </div>
+
+      <!-- Media Display Area -->
+      <div id="inspect-media-display" class="w-full rounded-2xl overflow-hidden bg-black/60 border border-white/10 flex items-center justify-center min-h-[220px] max-h-[420px]">
+        <!-- Image or Video injected here -->
+      </div>
+
+      <!-- Caption -->
+      <h4 class="text-lg font-bold font-['Outfit'] text-white mt-4" id="inspect-media-title">Memory Title</h4>
+      <p class="text-sm text-purple-200/90 mt-1 leading-relaxed" id="inspect-media-caption">Memory story...</p>
+
+      <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+        <button id="like-memory-btn" class="px-3.5 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 text-xs font-bold flex items-center space-x-1.5 transition-all">
+          <span>❤️</span>
+          <span id="memory-likes-count">42 Loves</span>
+        </button>
+        <span class="text-[11px] text-gray-400">From Sikadev's 3D Vault</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN STUDIO MODAL -->
+  <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+    <div class="relative w-full max-w-2xl bg-[#0c0e24] border border-amber-400/40 rounded-3xl p-6 shadow-2xl text-left transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
+      <button id="close-admin-modal-btn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
+
+      <!-- Admin Passcode Screen -->
+      <div id="admin-auth-screen" class="space-y-4 text-center py-6">
+        <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-3xl">
+          🔐
+        </div>
+        <h3 class="text-2xl font-black font-['Outfit'] text-white">Sikadev's Admin Studio</h3>
+        <p class="text-xs text-purple-300/80 max-w-sm mx-auto">
+          Enter your 4-digit passcode to manage 3D photos/videos, set the live celebration timer, and configure WhatsApp.
+        </p>
+        <div class="max-w-xs mx-auto">
+          <input type="password" id="admin-pin-input" maxlength="8" placeholder="Enter PIN (Default: 2026)" class="w-full text-center tracking-widest text-xl bg-white/5 border border-amber-400/40 focus:border-amber-400 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none" />
+          <button id="admin-login-btn" class="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-black font-black text-sm shadow-lg hover:brightness-110 active:scale-95 transition-all">
+            Unlock Studio ✨
+          </button>
+        </div>
+        <p class="text-[10px] text-gray-500">Default passcode is 2026</p>
+      </div>
+
+      <!-- Admin Dashboard (Visible after login) -->
+      <div id="admin-dashboard-screen" class="hidden space-y-5">
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
+          <div>
+            <h3 class="text-xl font-black font-['Outfit'] text-amber-300">Creator Studio & Event Control</h3>
+            <p class="text-xs text-purple-300/80">Manage your 3D memories & live birthday event</p>
+          </div>
+          <button id="admin-logout-btn" class="text-xs text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20">
+            Lock 🔒
+          </button>
+        </div>
+
+        <!-- Admin Tabs -->
+        <div class="flex space-x-2 border-b border-white/10 pb-2">
+          <button id="tab-media-btn" class="admin-tab active px-3.5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
+            📸 3D Media Gallery
+          </button>
+          <button id="tab-event-btn" class="admin-tab px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-xs font-bold">
+            ⏰ Live Event Countdown
+          </button>
+          <button id="tab-settings-btn" class="admin-tab px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-xs font-bold">
+            ⚙️ Settings
+          </button>
+        </div>
+
+        <!-- TAB 1: MEDIA GALLERY -->
+        <div id="admin-tab-media" class="space-y-4">
+          <form id="add-media-form" class="space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Add New 3D Memory (Image or Video)</h4>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-purple-200 mb-1">Title / Milestone</label>
+                <input type="text" id="media-title-input" required placeholder="e.g. My Favorite Dev Project, Trip to the Beach" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-purple-200 mb-1">Media Type</label>
+                <select id="media-type-input" class="w-full bg-[#12142f] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400">
+                  <option value="image">Image (Photo)</option>
+                  <option value="video">Video (MP4 / WebM)</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-purple-200 mb-1">Image/Video URL or Upload File</label>
+              <div class="flex gap-2">
+                <input type="url" id="media-url-input" placeholder="https://images.unsplash.com/... or paste video URL" class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+                <label class="cursor-pointer px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center space-x-1 shrink-0">
+                  <span>📁 Upload</span>
+                  <input type="file" id="media-file-input" accept="image/*,video/*" class="hidden" />
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-purple-200 mb-1">Story / Caption for your Lovelies</label>
+              <textarea id="media-caption-input" rows="2" placeholder="Tell the story or memory behind this moment..." class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400 resize-none"></textarea>
+            </div>
+
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-black font-extrabold text-xs shadow-md transition-all">
+              + Add to 3D Orbit Sky 🌟
+            </button>
+          </form>
+
+          <!-- Current Media List -->
+          <div>
+            <h4 class="text-xs font-bold text-purple-200 mb-2">Active 3D Media Items (<span id="admin-media-count">0</span>)</h4>
+            <div id="admin-media-list" class="space-y-2 max-h-60 overflow-y-auto">
+              <!-- Injected dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: LIVE EVENT COUNTDOWN -->
+        <div id="admin-tab-event" class="hidden space-y-4">
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Schedule Celebration Hour</h4>
+            <p class="text-xs text-purple-200/80">
+              Set the exact date & time when the countdown reaches zero. When the moment arrives, everyone on the site gets the synchronized celebration!
+            </p>
+
+            <div>
+              <label class="block text-[11px] font-semibold text-purple-200 mb-1">Target Celebration Date & Time</label>
+              <input type="datetime-local" id="event-datetime-input" class="w-full bg-[#12142f] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+            </div>
+
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button type="button" id="set-midnight-btn" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-amber-200">
+                🌙 Set to Midnight Tonight (00:00)
+              </button>
+              <button type="button" id="set-1hour-btn" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-amber-200">
+                ⚡ In 1 Hour
+              </button>
+              <button type="button" id="set-tomorrow-noon-btn" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-amber-200">
+                ☀️ Tomorrow 12:00 PM
+              </button>
+            </div>
+
+            <button type="button" id="save-event-time-btn" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-md transition-all">
+              Save Event Schedule ⏰
+            </button>
+          </div>
+
+          <!-- Instant Live Test Trigger -->
+          <div class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 space-y-2">
+            <h4 class="text-xs font-bold text-rose-300 uppercase tracking-wider">🚀 Live Celebration Trigger (Test / Override)</h4>
+            <p class="text-xs text-purple-200/80">
+              Want to start the live party right now? Tapping this launches the 10-second synchronized countdown and celebration immediately!
+            </p>
+            <button type="button" id="force-live-now-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-black text-xs shadow-lg active:scale-95 transition-all">
+              🚨 Trigger Live Celebration Now!
+            </button>
+          </div>
+        </div>
+
+        <!-- TAB 3: SETTINGS -->
+        <div id="admin-tab-settings" class="hidden space-y-4">
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">WhatsApp Phone Number</h4>
+            <p class="text-xs text-purple-200/80">
+              Wishes sent from the "Send on WhatsApp" button will open directly in a chat with this phone number.
+            </p>
+            <input type="text" id="admin-phone-input" placeholder="e.g. 15551234567 (with country code)" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+            <button type="button" id="save-phone-btn" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition-all">
+              Save Phone Number 📲
+            </button>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Change Admin Passcode</h4>
+            <input type="password" id="admin-new-pin-input" placeholder="New 4-8 digit PIN" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+            <button type="button" id="save-pin-btn" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition-all">
+              Update PIN 🔐
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- WISH MODAL (Send wish to Sikadev & Sky) -->
   <div id="wish-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
@@ -201,17 +464,6 @@
           </div>
         </div>
 
-        <!-- Optional Phone Number Config for Sikadev -->
-        <div class="pt-1">
-          <details class="text-[11px] text-purple-300/70 cursor-pointer">
-            <summary class="hover:text-purple-200">⚙️ WhatsApp Target Number Settings</summary>
-            <div class="mt-2 p-2.5 rounded-lg bg-black/40 border border-white/10 space-y-1">
-              <label class="text-[10px] text-gray-400">Sikadev's Phone with Country Code (e.g. 15551234567, or leave blank to choose contact on WhatsApp):</label>
-              <input type="text" id="target-phone" placeholder="Optional phone number (e.g. 1234567890)" class="w-full bg-white/5 border border-white/10 rounded px-2 py-1 text-xs text-purple-200 outline-none" />
-            </div>
-          </details>
-        </div>
-
         <!-- Submit Buttons -->
         <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
           <!-- WhatsApp Direct -->
@@ -250,7 +502,7 @@
   </div>
 
   <!-- SINGLE WISH INSPECT POPUP (When tapping a 3D Star) -->
-  <div id="star-inspect-card" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[90%] bg-[#12142f]/95 border border-purple-400/40 rounded-2xl p-4 shadow-2xl backdrop-blur-lg transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none">
+  <div id="star-inspect-card" class="fixed bottom-12 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[90%] bg-[#12142f]/95 border border-purple-400/40 rounded-2xl p-4 shadow-2xl backdrop-blur-lg transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none">
     <div class="flex items-start justify-between">
       <div class="flex items-center space-x-2">
         <span id="inspect-vibe" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-semibold">👑 The GOAT</span>

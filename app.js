@@ -777,7 +777,7 @@ document.getElementById("active-card-pill").addEventListener("click", () => {
 
 // Wheel scroll to rotate
 window.addEventListener('wheel', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#post-moment-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal')) return;
 
   if (window.scrollY < 250) {
     targetRotationY += e.deltaY * 0.0035;
@@ -826,13 +826,13 @@ if (scrollPromptBtn) {
 
 // Drag to rotate
 window.addEventListener('mousedown', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#post-moment-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
   isDragging = true;
   previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
 window.addEventListener('touchstart', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#post-moment-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
   if (e.touches.length === 1) {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -867,7 +867,7 @@ window.addEventListener('touchend', () => isDragging = false);
 // Raycasting click
 window.addEventListener('click', (e) => {
   if (isDragging) return;
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#post-moment-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
 
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -921,9 +921,25 @@ function renderShowcaseSection() {
   if (!grid) return;
   grid.innerHTML = "";
 
+  if (mediaItems.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full text-center py-10 px-4 rounded-3xl bg-white/5 border border-dashed border-white/15">
+        <span class="text-3xl">📸</span>
+        <p class="text-base font-bold text-white mt-2">No 3D Moments in Orbit Yet</p>
+        <p class="text-xs text-purple-300/70 mt-1 max-w-sm mx-auto">Be the first to share a favorite photo or memory with Sikadev!</p>
+        <button id="empty-post-moment-btn" class="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold text-xs shadow-md active:scale-95 transition-all">
+          + Post a Moment with Sikadev 📸
+        </button>
+      </div>
+    `;
+    const emptyBtn = document.getElementById("empty-post-moment-btn");
+    if (emptyBtn) emptyBtn.addEventListener("click", openPublicMomentModal);
+    return;
+  }
+
   mediaItems.forEach((item, index) => {
     const card = document.createElement("div");
-    card.className = "card-showcase-item rounded-3xl bg-[#0e1026]/90 border border-purple-500/20 p-5 shadow-xl flex flex-col justify-between backdrop-blur-md cursor-pointer";
+    card.className = "card-showcase-item rounded-3xl bg-[#0e1026]/90 border border-purple-500/20 p-5 shadow-xl flex flex-col justify-between backdrop-blur-md cursor-pointer hover:border-purple-400/40 transition-all";
     
     const mediaPreview = item.type === "video" 
       ? `<div class="relative w-full h-44 rounded-2xl overflow-hidden bg-black mb-3">
@@ -931,23 +947,27 @@ function renderShowcaseSection() {
            <span class="absolute top-3 right-3 bg-red-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">🎥 Video</span>
          </div>`
       : `<div class="relative w-full h-44 rounded-2xl overflow-hidden bg-black mb-3">
-           <img src="${item.url}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover" />
+           <img src="${item.url}" alt="${escapeHtml(item.title)}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1555066931-4365d14bab8c?q=80&w=800&auto=format&fit=crop';" />
            <span class="absolute top-3 right-3 bg-blue-600/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">📸 Photo</span>
          </div>`;
+
+    const authorBadge = item.author 
+      ? `<span class="text-amber-300 font-semibold truncate flex items-center space-x-1"><span>👤</span><span class="truncate">${escapeHtml(item.author)}</span></span>`
+      : `<span class="text-purple-300/70 truncate">${escapeHtml(item.date || 'Moment')}</span>`;
 
     card.innerHTML = `
       <div>
         ${mediaPreview}
-        <div class="flex items-center justify-between text-xs text-purple-300/70 mb-1">
-          <span>${item.date || 'Moment'}</span>
-          <span class="text-rose-400 font-semibold">❤️ ${item.likes || 42}</span>
+        <div class="flex items-center justify-between text-xs mb-1.5">
+          ${authorBadge}
+          <span class="text-rose-400 font-semibold shrink-0 ml-2">❤️ ${item.likes || 42}</span>
         </div>
         <h5 class="text-base font-bold text-white font-['Outfit']">${escapeHtml(item.title)}</h5>
         <p class="text-xs text-purple-200/80 mt-1 line-clamp-2">${escapeHtml(item.caption || '')}</p>
       </div>
 
       <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-        <button class="view-in-3d-btn px-3 py-1.5 rounded-xl bg-purple-600/40 hover:bg-purple-600 border border-purple-400/40 text-xs font-bold text-white flex items-center space-x-1" data-index="${index}">
+        <button class="view-in-3d-btn px-3 py-1.5 rounded-xl bg-purple-600/40 hover:bg-purple-600 border border-purple-400/40 text-xs font-bold text-white flex items-center space-x-1 transition-colors" data-index="${index}">
           <span>🪐 View in 3D Sky</span>
         </button>
         <button class="expand-card-btn text-xs text-amber-300 font-bold hover:underline" data-index="${index}">
@@ -1427,8 +1447,12 @@ let currentInspectedMedia = null;
 function showMediaInspect(media) {
   currentInspectedMedia = media;
   inspectMediaTitle.textContent = media.title;
-  inspectMediaCaption.textContent = media.caption;
-  inspectMediaTag.textContent = media.type === "video" ? "🎥 Video Memory" : "📸 Photo Memory";
+  inspectMediaCaption.textContent = media.caption || '';
+  if (media.author) {
+    inspectMediaTag.textContent = `${media.type === "video" ? "🎥 Video" : "📸 Photo"} • Shared with love by ${media.author}`;
+  } else {
+    inspectMediaTag.textContent = media.type === "video" ? "🎥 Video Memory" : "📸 Photo Memory";
+  }
   memoryLikesCount.textContent = `${media.likes || 42} Loves`;
 
   inspectMediaDisplay.innerHTML = "";
@@ -1492,6 +1516,186 @@ if (viewMemoriesBtn) {
     } else {
       alert("No 3D media added yet! Tap Admin to add photos.");
     }
+  });
+}
+
+// ==========================================
+// 9.5 PUBLIC POST A MOMENT WITH SIKADEV (No Admin needed)
+// ==========================================
+const postMomentModal = document.getElementById("post-moment-modal");
+const openPostMomentBtn = document.getElementById("open-post-moment-btn");
+const sectionPostMomentBtn = document.getElementById("section-post-moment-btn");
+const closePostMomentModalBtn = document.getElementById("close-post-moment-modal");
+const publicPostMomentForm = document.getElementById("public-post-moment-form");
+
+const momentAuthorInput = document.getElementById("moment-author-input");
+const publicMomentTitle = document.getElementById("public-moment-title");
+const publicMomentType = document.getElementById("public-moment-type");
+const publicMomentFile = document.getElementById("public-moment-file");
+const publicMomentUrl = document.getElementById("public-moment-url");
+const publicMomentCaption = document.getElementById("public-moment-caption");
+const publicMomentPreviewBox = document.getElementById("public-moment-preview-box");
+const publicMomentPreviewImg = document.getElementById("public-moment-preview-img");
+const publicMomentPreviewVideo = document.getElementById("public-moment-preview-video");
+const clearPublicMomentPreview = document.getElementById("clear-public-moment-preview");
+
+function openPublicMomentModal() {
+  if (postMomentModal) {
+    postMomentModal.classList.add("active");
+    initAudio();
+    playBellTone(640);
+    if (momentAuthorInput) momentAuthorInput.focus();
+  }
+}
+
+if (openPostMomentBtn) openPostMomentBtn.addEventListener("click", openPublicMomentModal);
+if (sectionPostMomentBtn) sectionPostMomentBtn.addEventListener("click", openPublicMomentModal);
+
+if (closePostMomentModalBtn) {
+  closePostMomentModalBtn.addEventListener("click", () => {
+    if (postMomentModal) postMomentModal.classList.remove("active");
+  });
+}
+
+if (postMomentModal) {
+  postMomentModal.addEventListener("click", (e) => {
+    if (e.target === postMomentModal) {
+      postMomentModal.classList.remove("active");
+    }
+  });
+}
+
+// File handling with smart canvas compression for images
+if (publicMomentFile) {
+  publicMomentFile.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.type.startsWith("video/")) {
+      publicMomentType.value = "video";
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        publicMomentUrl.value = evt.target.result;
+        publicMomentPreviewBox.classList.remove("hidden");
+        publicMomentPreviewImg.classList.add("hidden");
+        publicMomentPreviewVideo.classList.remove("hidden");
+        publicMomentPreviewVideo.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    } else {
+      publicMomentType.value = "image";
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          const maxDim = 1000;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          canvas.width = w;
+          canvas.height = h;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(img, 0, 0, w, h);
+          const compressed = canvas.toDataURL("image/jpeg", 0.85);
+          publicMomentUrl.value = compressed;
+          publicMomentPreviewBox.classList.remove("hidden");
+          publicMomentPreviewVideo.classList.add("hidden");
+          publicMomentPreviewImg.classList.remove("hidden");
+          publicMomentPreviewImg.src = compressed;
+        };
+        img.src = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+if (publicMomentUrl) {
+  publicMomentUrl.addEventListener("input", () => {
+    const url = publicMomentUrl.value.trim();
+    if (!url) {
+      publicMomentPreviewBox.classList.add("hidden");
+      return;
+    }
+    const isVideo = url.endsWith(".mp4") || publicMomentType.value === "video";
+    publicMomentPreviewBox.classList.remove("hidden");
+    if (isVideo) {
+      publicMomentPreviewImg.classList.add("hidden");
+      publicMomentPreviewVideo.classList.remove("hidden");
+      publicMomentPreviewVideo.src = url;
+    } else {
+      publicMomentPreviewVideo.classList.add("hidden");
+      publicMomentPreviewImg.classList.remove("hidden");
+      publicMomentPreviewImg.src = url;
+    }
+  });
+}
+
+if (clearPublicMomentPreview) {
+  clearPublicMomentPreview.addEventListener("click", () => {
+    if (publicMomentFile) publicMomentFile.value = "";
+    if (publicMomentUrl) publicMomentUrl.value = "";
+    if (publicMomentPreviewBox) publicMomentPreviewBox.classList.add("hidden");
+    if (publicMomentPreviewImg) publicMomentPreviewImg.src = "";
+    if (publicMomentPreviewVideo) publicMomentPreviewVideo.src = "";
+  });
+}
+
+// Form Submission
+if (publicPostMomentForm) {
+  publicPostMomentForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const author = momentAuthorInput.value.trim();
+    const title = publicMomentTitle.value.trim();
+    const type = publicMomentType.value;
+    const url = publicMomentUrl.value.trim();
+    const caption = publicMomentCaption.value.trim();
+
+    if (!url) {
+      alert("Please upload a photo/video or paste an image link!");
+      return;
+    }
+
+    const newMoment = {
+      id: Date.now(),
+      title: title,
+      type: type,
+      url: url,
+      caption: caption,
+      author: author,
+      likes: 1,
+      date: "Shared just now"
+    };
+
+    mediaItems.unshift(newMoment);
+    try {
+      localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
+    } catch (err) {}
+
+    createMediaGallery();
+    renderShowcaseSection();
+    if (typeof renderAdminMediaList === "function") renderAdminMediaList();
+
+    // Rotate 3D Universe to face this newly added moment in the sky
+    rotateToCard(0);
+
+    confetti({ particleCount: 75, spread: 80, origin: { y: 0.6 } });
+    playBellTone(880);
+
+    publicPostMomentForm.reset();
+    if (clearPublicMomentPreview) clearPublicMomentPreview.click();
+    if (postMomentModal) postMomentModal.classList.remove("active");
+
+    alert(`🎉 Thank you, ${author}! Your moment with Sikadev has been added to the 3D Universe! ✨`);
   });
 }
 
@@ -1639,7 +1843,7 @@ function renderAdminMediaList() {
             <span>${item.type === 'video' ? '🎥' : '📸'}</span>
             <span class="truncate">${escapeHtml(item.title)}</span>
           </p>
-          <p class="text-[10px] text-gray-400 truncate">${escapeHtml(item.caption || item.date || '3D Memory')}</p>
+          <p class="text-[10px] text-gray-400 truncate">${item.author ? `<span class="text-amber-300 font-semibold">👤 By ${escapeHtml(item.author)}</span> • ` : ''}${escapeHtml(item.caption || item.date || '3D Memory')}</p>
         </div>
       </div>
       <button class="delete-media-btn text-rose-400 hover:text-white hover:bg-rose-600/90 px-3 py-1.5 bg-rose-500/15 rounded-lg shrink-0 font-bold text-xs border border-rose-500/30 transition-all active:scale-95" data-index="${index}" title="Delete this card from 3D Orbit">

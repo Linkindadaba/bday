@@ -1,5 +1,5 @@
-// Sikadev's Virtual Birthday Event Room
-// Minimal Live Video Blow Card Box + 3D Cake Candle Blow + Photo Booth + Live Reactions + WhatsApp Engine
+// Sikadev's Virtual Birthday Room - Clean Core Engine
+// Minimal Video Card Box + 3D Cake Candle Blow + Unified Control Dock + WhatsApp Engine
 
 // ==========================================
 // 1. STATE & STORAGE
@@ -12,10 +12,9 @@ const SIKADEV_CONFIG = {
 };
 
 function getDefaultCelebrationTime() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(0, 0, 0, 0);
-  return tomorrow.toISOString();
+  const target = new Date();
+  target.setHours(24, 0, 0, 0); // Tonight midnight
+  return target.toISOString();
 }
 
 // Default Seed Wishes
@@ -104,8 +103,7 @@ try {
 }
 
 let activeCardIndex = 0;
-let autoSpinEnabled = true;
-let isVideoMode = false;
+let isVideoCardOpen = false;
 let userMediaStream = null;
 
 // ==========================================
@@ -116,7 +114,7 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x090a16, 0.022);
 
 const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(0, 4.2, 13.5);
+camera.position.set(0, 3.8, 13.0);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -251,9 +249,7 @@ for (let i = 0; i < topBeadCount; i++) {
   cakeGroup.add(bead);
 }
 
-// ------------------------------------------
 // Candles & Animated Flickering Flames
-// ------------------------------------------
 const candles = [];
 const candleFlames = [];
 const candleLights = [];
@@ -488,32 +484,29 @@ createWishOrbs();
 // ==========================================
 // 3. MINIMAL LIVE VIDEO BLOW CARD BOX
 // ==========================================
+const videoCardBox = document.getElementById("video-card-box");
 const toggleCardCamBtn = document.getElementById("toggle-card-cam-btn");
+const closeCardCamBtn = document.getElementById("close-card-cam-btn");
 const camBtnIcon = document.getElementById("cam-btn-icon");
 const camBtnLabel = document.getElementById("cam-btn-label");
-const camActiveDot = document.getElementById("cam-active-dot");
-const videoCardStatus = document.getElementById("video-card-status");
-const liveVideoBadge = document.getElementById("live-video-badge");
 const webcamVideo = document.getElementById("webcam-video");
-const webcamPlaceholder = document.getElementById("webcam-placeholder");
 const cardWindBar = document.getElementById("card-wind-bar");
 const cardWindPct = document.getElementById("card-wind-pct");
-const cardBlowLabel = document.getElementById("card-blow-label");
 const cardQuickBlowBtn = document.getElementById("card-quick-blow-btn");
 
 toggleCardCamBtn.addEventListener("click", async () => {
-  if (isVideoMode) {
-    stopLiveVideoCard();
+  if (isVideoCardOpen) {
+    closeVideoCard();
   } else {
-    await startLiveVideoCard();
+    await openVideoCard();
   }
 });
 
-webcamPlaceholder.addEventListener("click", async () => {
-  if (!isVideoMode) await startLiveVideoCard();
+closeCardCamBtn.addEventListener("click", () => {
+  closeVideoCard();
 });
 
-async function startLiveVideoCard() {
+async function openVideoCard() {
   initAudio();
   try {
     userMediaStream = await navigator.mediaDevices.getUserMedia({
@@ -524,57 +517,36 @@ async function startLiveVideoCard() {
     webcamVideo.srcObject = userMediaStream;
     await webcamVideo.play();
 
-    isVideoMode = true;
-    webcamVideo.classList.remove("hidden");
-    webcamPlaceholder.classList.add("hidden");
-
-    camActiveDot.classList.remove("bg-gray-500");
-    camActiveDot.classList.add("bg-emerald-400", "animate-pulse");
-
-    videoCardStatus.textContent = "🔴 LIVE CAM";
-    videoCardStatus.classList.add("text-rose-400");
-    liveVideoBadge.classList.remove("hidden");
+    isVideoCardOpen = true;
+    videoCardBox.classList.remove("hidden");
 
     camBtnLabel.textContent = "Stop Cam";
     camBtnIcon.textContent = "⏹️";
 
-    cardBlowLabel.textContent = "Blow toward camera!";
-    statusText.textContent = "Live Cam active! Look into the card box & blow candles! 🎂💨";
-
+    statusText.textContent = "Live Cam active! Look into the card & blow candles! 🎂💨";
     connectStreamToMicAnalyzer(userMediaStream);
     playBellTone(880);
-    confetti({ particleCount: 25, spread: 50 });
+    confetti({ particleCount: 20, spread: 45 });
   } catch (err) {
     console.error("Camera access error:", err);
-    alert("Camera permission was not granted or camera not detected. You can still use 'Tap to Blow'!");
+    alert("Camera permission denied. You can still blow or use the buttons!");
   }
 }
 
-function stopLiveVideoCard() {
+function closeVideoCard() {
   if (userMediaStream) {
     userMediaStream.getTracks().forEach(track => track.stop());
     userMediaStream = null;
   }
   webcamVideo.srcObject = null;
-  isVideoMode = false;
+  isVideoCardOpen = false;
 
-  webcamVideo.classList.add("hidden");
-  webcamPlaceholder.classList.remove("hidden");
-
-  camActiveDot.classList.remove("bg-emerald-400", "animate-pulse");
-  camActiveDot.classList.add("bg-gray-500");
-
-  videoCardStatus.textContent = "Video Cam";
-  videoCardStatus.classList.remove("text-rose-400");
-  liveVideoBadge.classList.add("hidden");
-
-  camBtnLabel.textContent = "Start Cam";
+  videoCardBox.classList.add("hidden");
+  camBtnLabel.textContent = "Live Cam";
   camBtnIcon.textContent = "📹";
 
-  cardBlowLabel.textContent = "Blow into Mic";
   cardWindBar.style.width = "0%";
   cardWindPct.textContent = "0%";
-
   stopMic();
 }
 
@@ -616,15 +588,14 @@ function takeCelebrationSnapshot() {
   // Draw 3D WebGL Canvas Layer
   ctx.drawImage(renderer.domElement, 0, 0, w, h);
 
-  // If live camera is active, draw the minimal selfie card in top-right or corner
-  if (isVideoMode && webcamVideo.videoWidth) {
+  // If live camera is active, draw the minimal selfie card in top-right
+  if (isVideoCardOpen && webcamVideo.videoWidth) {
     const cardW = 200;
     const cardH = 250;
     const cardX = w - cardW - 30;
     const cardY = 30;
 
     ctx.save();
-    // Rounded clip for camera card
     ctx.beginPath();
     ctx.roundRect(cardX, cardY, cardW, cardH, 20);
     ctx.clip();
@@ -634,7 +605,6 @@ function takeCelebrationSnapshot() {
     ctx.drawImage(webcamVideo, 0, 0, cardW, cardH);
     ctx.restore();
 
-    // Border around card
     ctx.strokeStyle = "#ec4899";
     ctx.lineWidth = 3;
     ctx.beginPath();
@@ -644,17 +614,17 @@ function takeCelebrationSnapshot() {
 
   // Draw Polaroid footer
   ctx.fillStyle = "rgba(14, 16, 38, 0.9)";
-  ctx.fillRect(0, h - 100, w, 100);
+  ctx.fillRect(0, h - 90, w, 90);
 
   ctx.fillStyle = "#f59e0b";
-  ctx.font = "bold 26px Outfit, sans-serif";
+  ctx.font = "bold 24px Outfit, sans-serif";
   ctx.textAlign = "left";
-  ctx.fillText("🎂 Sikadev's Virtual Birthday Room 🎉", 30, h - 55);
+  ctx.fillText("🎂 Sikadev's Virtual Birthday Room 🎉", 30, h - 50);
 
   ctx.fillStyle = "#cbd5e1";
-  ctx.font = "14px 'Plus Jakarta Sans', sans-serif";
+  ctx.font = "13px 'Plus Jakarta Sans', sans-serif";
   const nowStr = new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
-  ctx.fillText(`✨ Candle blowout live with Lovelies • ${nowStr}`, 30, h - 25);
+  ctx.fillText(`✨ Celebrated live with Lovelies • ${nowStr}`, 30, h - 22);
 
   snapshotModal.classList.add("active");
   confetti({ particleCount: 50, spread: 80, origin: { y: 0.6 } });
@@ -671,7 +641,7 @@ shareSnapshotWhatsappBtn.addEventListener("click", () => {
   const shareText = 
 `🎂 *Sikadev's Virtual Birthday Room Snapshot!* 📸✨
 
-We just blew out the candles live in the video box! Come send a wish and join the celebration room:
+We just blew out the candles live! Come send a wish and join the celebration:
 👉 ${window.location.href}`;
 
   const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -679,7 +649,7 @@ We just blew out the candles live in the video box! Come send a wish and join th
 });
 
 // ------------------------------------------
-// FLOATING LIVE REACTIONS (TikTok/Instagram style)
+// FLOATING LIVE REACTIONS
 // ------------------------------------------
 const reactionsContainer = document.getElementById("reactions-container");
 
@@ -696,8 +666,8 @@ function spawnFloatingReaction(emoji) {
   el.className = "floating-reaction";
   el.textContent = emoji;
 
-  const startX = window.innerWidth - 70 - Math.random() * 60;
-  const startY = window.innerHeight - 100 - Math.random() * 40;
+  const startX = window.innerWidth - 65 - Math.random() * 50;
+  const startY = window.innerHeight - 110 - Math.random() * 40;
 
   el.style.left = `${startX}px`;
   el.style.top = `${startY}px`;
@@ -738,7 +708,7 @@ function updateActiveCardUI() {
   const titleEl = document.getElementById("active-card-title");
   const iconEl = document.getElementById("active-card-icon");
   if (titleEl) {
-    titleEl.textContent = `Card ${activeCardIndex + 1}/${mediaItems.length}: ${activeItem.title}`;
+    titleEl.textContent = `${activeItem.title} (${activeCardIndex + 1}/${mediaItems.length})`;
   }
   if (iconEl) {
     iconEl.textContent = activeItem.type === "video" ? "🎥" : "📸";
@@ -782,14 +752,14 @@ function detectNearestCard() {
   }
 }
 
-// Parallax tilt on page scroll
+// Parallax tilt on scroll
 window.addEventListener('scroll', () => {
   const scrollY = window.scrollY;
-  if (scrollY > 100) {
-    camera.position.y = 4.2 - (scrollY * 0.002);
-    targetRotationX = Math.min(0.35, 0.15 + (scrollY * 0.0003));
+  if (scrollY > 80) {
+    camera.position.y = 3.8 - (scrollY * 0.0018);
+    targetRotationX = Math.min(0.32, 0.15 + (scrollY * 0.0003));
   } else {
-    camera.position.y = 4.2;
+    camera.position.y = 3.8;
     targetRotationX = 0.15;
   }
 }, { passive: true });
@@ -798,15 +768,15 @@ document.getElementById("scroll-prompt-btn").addEventListener("click", () => {
   document.getElementById("cards-showcase-section").scrollIntoView({ behavior: "smooth" });
 });
 
-// Touch and mouse drag
+// Drag to rotate
 window.addEventListener('mousedown', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
   isDragging = true;
   previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
 window.addEventListener('touchstart', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
   if (e.touches.length === 1) {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -838,10 +808,10 @@ window.addEventListener('touchmove', (e) => {
 window.addEventListener('mouseup', () => isDragging = false);
 window.addEventListener('touchend', () => isDragging = false);
 
-// Raycasting click on 3D elements
+// Raycasting click
 window.addEventListener('click', (e) => {
   if (isDragging) return;
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section') || e.target.closest('#video-card-box')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('button') || e.target.closest('input') || e.target.closest('#cards-showcase-section') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
 
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
@@ -1069,17 +1039,16 @@ function playBirthdayFanfare() {
 }
 
 const soundBtn = document.getElementById("sound-btn");
-const soundState = document.getElementById("sound-state");
 soundBtn.addEventListener("click", () => {
   initAudio();
   soundEnabled = !soundEnabled;
-  soundState.textContent = soundEnabled ? "On" : "Off";
-  soundBtn.classList.toggle("border-purple-400", soundEnabled);
+  soundBtn.classList.toggle("text-amber-300", soundEnabled);
+  soundBtn.classList.toggle("border-amber-400", soundEnabled);
   if (soundEnabled) playBellTone(660);
 });
 
 // ==========================================
-// 7. THE "BLOW THE MIC" AUDIO ENGINE
+// 7. THE "BLOW" ENGINE (Mic & Dock)
 // ==========================================
 let micStream = null;
 let analyser = null;
@@ -1088,8 +1057,9 @@ let candlesExtinguished = false;
 let blowEnergyAccumulator = 0;
 
 const statusText = document.getElementById("status-text");
-const statusPill = document.getElementById("status-pill");
 const relightBtn = document.getElementById("relight-btn");
+const micTriggerBtn = document.getElementById("mic-trigger-btn");
+const micBtnText = document.getElementById("mic-btn-text");
 
 function connectStreamToMicAnalyzer(stream) {
   initAudio();
@@ -1108,13 +1078,14 @@ function connectStreamToMicAnalyzer(stream) {
 }
 
 function stopMic() {
-  if (micStream && !isVideoMode) {
+  if (micStream && !isVideoCardOpen) {
     micStream.getTracks().forEach(track => track.stop());
     micStream = null;
   }
   micActive = false;
   cardWindBar.style.width = "0%";
   cardWindPct.textContent = "0%";
+  micBtnText.textContent = "Blow";
 }
 
 function listenForBlow() {
@@ -1141,7 +1112,7 @@ function listenForBlow() {
   if (averageEnergy > 70) {
     blowEnergyAccumulator += 1;
     if (blowEnergyAccumulator > 7) {
-      extinguishCandles("mic-card");
+      extinguishCandles("mic-blow");
       return;
     }
   } else {
@@ -1150,6 +1121,31 @@ function listenForBlow() {
 
   requestAnimationFrame(listenForBlow);
 }
+
+// Dock Blow Button
+micTriggerBtn.addEventListener("click", async () => {
+  initAudio();
+  if (candlesExtinguished) {
+    relightCandles();
+    return;
+  }
+
+  // If mic not active, attempt to start mic listening
+  if (!micActive) {
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      connectStreamToMicAnalyzer(micStream);
+      micBtnText.textContent = "Blowing...";
+      statusText.textContent = "Listening! Take a breath & blow into your mic! 🌬️";
+    } catch (e) {
+      // Direct blowout if mic denied
+      extinguishCandles("tap");
+    }
+  } else {
+    // If already active, one-tap trigger
+    extinguishCandles("tap");
+  }
+});
 
 function extinguishCandles(triggerType = "manual") {
   if (candlesExtinguished) return;
@@ -1161,15 +1157,12 @@ function extinguishCandles(triggerType = "manual") {
   spawnSmokeParticles();
 
   statusText.textContent = "🎉 CANDLES BLOWN! HAPPY BIRTHDAY SIKADEV! 🚀✨";
-  statusPill.classList.remove("border-white/10");
-  statusPill.classList.add("bg-gradient-to-r", "from-pink-600/30", "to-amber-500/30", "border-amber-400");
-
   playBirthdayFanfare();
   launchCelebrationConfetti();
 
   relightBtn.classList.remove("hidden");
+  micTriggerBtn.classList.add("hidden");
 
-  // Spawn celebratory reaction flurry
   for (let i = 0; i < 6; i++) {
     setTimeout(() => {
       const reactions = ["🎉", "🎂", "❤️", "🥂", "🚀", "👑"];
@@ -1177,6 +1170,33 @@ function extinguishCandles(triggerType = "manual") {
     }, i * 320);
   }
 }
+
+function relightCandles() {
+  candlesExtinguished = false;
+  blowEnergyAccumulator = 0;
+
+  candleFlames.forEach(flame => {
+    flame.visible = true;
+    flame.scale.set(1, 1, 1);
+  });
+  candleLights.forEach(light => light.intensity = 1.5);
+
+  statusText.textContent = "Candles relit! Ready to blow again! 🎂";
+
+  relightBtn.classList.add("hidden");
+  micTriggerBtn.classList.remove("hidden");
+  micBtnText.textContent = "Blow";
+  cardWindBar.style.width = "0%";
+  cardWindPct.textContent = "0%";
+
+  if (isVideoCardOpen && userMediaStream) {
+    connectStreamToMicAnalyzer(userMediaStream);
+  }
+
+  playBellTone(700);
+}
+
+relightBtn.addEventListener("click", relightCandles);
 
 function spawnSmokeParticles() {
   const smokeGeo = new THREE.SphereGeometry(0.08, 8, 8);
@@ -1233,31 +1253,6 @@ function launchCelebrationConfetti() {
   });
 }
 
-// Relight Candles
-relightBtn.addEventListener("click", () => {
-  candlesExtinguished = false;
-  blowEnergyAccumulator = 0;
-
-  candleFlames.forEach(flame => {
-    flame.visible = true;
-    flame.scale.set(1, 1, 1);
-  });
-  candleLights.forEach(light => light.intensity = 1.5);
-
-  statusText.textContent = "Candles relit! Ready to blow again! 🎂";
-  statusPill.className = "pointer-events-auto inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium mb-1.5 animate-bounce-slow";
-
-  relightBtn.classList.add("hidden");
-  cardWindBar.style.width = "0%";
-  cardWindPct.textContent = "0%";
-
-  if (isVideoMode && userMediaStream) {
-    connectStreamToMicAnalyzer(userMediaStream);
-  }
-
-  playBellTone(700);
-});
-
 // ==========================================
 // 8. TIMED LIVE EVENT & PRESENCE ENGINE
 // ==========================================
@@ -1282,7 +1277,7 @@ function updateLiveCountdown() {
   const diff = target - now;
 
   if (diff <= 0) {
-    countdownTimerDisplay.textContent = "00:00:00 (LIVE NOW!)";
+    countdownTimerDisplay.textContent = "LIVE NOW! 🎉";
     countdownTimerDisplay.classList.add("text-rose-400", "animate-pulse");
     
     if (!liveCelebrationTriggered) {
@@ -1401,7 +1396,7 @@ document.getElementById("view-memories-btn").addEventListener("click", () => {
   if (mediaItems.length > 0) {
     showMediaInspect(mediaItems[activeCardIndex] || mediaItems[0]);
   } else {
-    alert("No 3D media added yet! Tap the Admin button to add your photos and videos.");
+    alert("No 3D media added yet! Tap Admin to add photos.");
   }
 });
 
@@ -1810,9 +1805,9 @@ function escapeHtml(str) {
 quickShareBtn.addEventListener("click", () => {
   const currentUrl = window.location.href;
   const shareText = 
-`🎂 *Join Sikadev's Virtual Birthday Room!* 📹🎉✨
+`🎂 *Join Sikadev's Virtual Birthday Room!* 🎉✨
 
-Come celebrate, blow out the 3D candles in the live video box & drop your wish:
+Come celebrate, blow out the 3D candles & drop your wish:
 👉 ${currentUrl}`;
 
   const shareUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -1833,7 +1828,7 @@ function animate() {
   universeGroup.rotation.y += (targetRotationY - universeGroup.rotation.y) * 0.08;
   cakeGroup.rotation.x += (targetRotationX - cakeGroup.rotation.x) * 0.08;
 
-  if (!isDragging && autoSpinEnabled && window.scrollY < 200) {
+  if (!isDragging && window.scrollY < 200) {
     targetRotationY += 0.0018;
     detectNearestCard();
   }

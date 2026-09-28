@@ -68,8 +68,8 @@
       <span class="text-gray-500">•</span>
       <span class="text-purple-200 flex items-center space-x-1">
         <span>👥</span>
-        <span id="live-presence-count" class="font-bold text-emerald-400">26</span>
-        <span class="hidden md:inline text-purple-300/70">Lovelies</span>
+        <span id="live-presence-count" class="font-bold text-emerald-400">1</span>
+        <span class="hidden md:inline text-purple-300/70">Online</span>
       </span>
     </div>
 
@@ -227,7 +227,7 @@
         <button id="view-wishes-btn" class="py-2.5 px-3 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-purple-200 hover:text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all active:scale-95">
           <span>💌</span>
           <span>Wishes</span>
-          <span id="wish-count-badge" class="font-bold text-amber-300 ml-1 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-[10px]">5</span>
+          <span id="wish-count-badge" class="font-bold text-amber-300 ml-1 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-[10px]">0</span>
         </button>
       </div>
 
@@ -292,7 +292,16 @@
             + Add Your Wish
           </button>
         </div>
-        <div id="wishes-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        <div id="wishes-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="col-span-full text-center py-10 px-4 rounded-3xl bg-white/5 border border-dashed border-white/15">
+            <span class="text-3xl">💌</span>
+            <p class="text-base font-bold text-white mt-2">No Wishes Pinned Yet</p>
+            <p class="text-xs text-purple-300/70 mt-1 max-w-sm mx-auto">The celebration room is live! Be the first to pin a birthday wish for Sikadev!</p>
+            <button id="empty-add-wish-btn" class="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-black font-extrabold text-xs shadow-md transition-all active:scale-95 cursor-pointer">
+              ✨ Pin the First Wish
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -301,10 +310,12 @@
   <div id="live-wish-ticker" class="fixed bottom-0 inset-x-0 z-20 bg-[#070812]/90 backdrop-blur-md border-t border-purple-500/15 py-1 px-4 overflow-hidden flex items-center text-xs">
     <div class="flex items-center space-x-1.5 shrink-0 pr-3 border-r border-white/10 text-xs font-bold text-amber-300">
       <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-      <span>WISHES</span>
+      <span>LIVE</span>
     </div>
     <div class="overflow-hidden whitespace-nowrap w-full ml-2">
-      <div id="ticker-content" class="inline-block text-purple-200 font-medium animate-marquee"></div>
+      <div id="ticker-content" class="inline-block text-purple-200 font-medium animate-marquee">
+        ✨ Sikadev's Virtual Birthday Room is LIVE! 🎂 Pin your birthday wish to orbit in 3D &amp; celebrate live! 🚀 &bull; Send your love to Sikadev ✨
+      </div>
     </div>
   </div>
 

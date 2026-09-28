@@ -17,52 +17,20 @@ function getDefaultCelebrationTime() {
   return target.toISOString();
 }
 
-// Default Seed Wishes
-const DEFAULT_WISHES = [
-  {
-    id: 1,
-    name: "Maya & Team",
-    message: "Happy Birthday Sikadev! Keep shining, innovating, and inspiring all of us! Big love! 💛",
-    vibe: "👑 The GOAT",
-    date: "Just now"
-  },
-  {
-    id: 2,
-    name: "Alex",
-    message: "Wishing you unstoppable energy, clean code, and zero bugs this year! Let's celebrate! 🚀",
-    vibe: "🚀 Big Moves",
-    date: "Today"
-  },
-  {
-    id: 3,
-    name: "Chloe",
-    message: "Cheers to another glorious trip around the sun! May this year bring everything you wished for! 🥂",
-    vibe: "🥂 Cheers & Joy",
-    date: "Today"
-  },
-  {
-    id: 4,
-    name: "Devon",
-    message: "Happy Birthday to a real visionary! Drinks on me this weekend brother! 🍕",
-    vibe: "🍕 Food on Me",
-    date: "Today"
-  },
-  {
-    id: 5,
-    name: "Kwame",
-    message: "May your algorithms be fast and your peace of mind unbroken! Keep lifting everyone around you! 🚀",
-    vibe: "👑 The GOAT",
-    date: "Today"
-  }
-];
+// Live Wishes Collection (Ready for Live Host)
+const DEFAULT_WISHES = [];
 
 let wishes = [];
 try {
-  const saved = localStorage.getItem("sikadev_bday_wishes");
-  wishes = saved ? JSON.parse(saved) : DEFAULT_WISHES;
+  const saved = localStorage.getItem("sikadev_live_wishes");
+  wishes = saved ? JSON.parse(saved) : [];
 } catch (e) {
-  wishes = DEFAULT_WISHES;
+  wishes = [];
 }
+// Clean out legacy fake seed wishes from previous test sessions
+try {
+  localStorage.removeItem("sikadev_bday_wishes");
+} catch (e) {}
 
 const DEFAULT_MEDIA = [
   {
@@ -998,6 +966,28 @@ function renderWishesShowcase() {
   if (!grid) return;
   grid.innerHTML = "";
 
+  if (wishes.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full text-center py-10 px-4 rounded-3xl bg-white/5 border border-dashed border-white/15">
+        <span class="text-3xl">💌</span>
+        <p class="text-base font-bold text-white mt-2">No Wishes Pinned Yet</p>
+        <p class="text-xs text-purple-300/70 mt-1 max-w-sm mx-auto">The celebration room is live! Be the first to pin a birthday wish for Sikadev!</p>
+        <button id="empty-add-wish-btn" class="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-black font-extrabold text-xs shadow-md transition-all active:scale-95">
+          ✨ Pin the First Wish
+        </button>
+      </div>
+    `;
+    const emptyBtn = document.getElementById("empty-add-wish-btn");
+    if (emptyBtn) {
+      emptyBtn.addEventListener("click", () => {
+        const wishModal = document.getElementById("wish-modal");
+        if (wishModal) wishModal.classList.add("active");
+        initAudio();
+      });
+    }
+    return;
+  }
+
   wishes.forEach(w => {
     const card = document.createElement("div");
     card.className = "p-4 rounded-2xl bg-white/5 border border-white/10 hover:border-pink-500/40 transition-all flex flex-col justify-between";
@@ -1024,6 +1014,17 @@ if (sectionAddWishBtn) {
     const wishModal = document.getElementById("wish-modal");
     if (wishModal) wishModal.classList.add("active");
     initAudio();
+  });
+}
+
+const wishesCardsGrid = document.getElementById("wishes-cards-grid");
+if (wishesCardsGrid) {
+  wishesCardsGrid.addEventListener("click", (e) => {
+    if (e.target.closest("#empty-add-wish-btn") || e.target.closest(".empty-add-wish-btn")) {
+      const wishModal = document.getElementById("wish-modal");
+      if (wishModal) wishModal.classList.add("active");
+      initAudio();
+    }
   });
 }
 
@@ -1357,12 +1358,23 @@ const dismissLiveOverlayBtn = document.getElementById("dismiss-live-overlay-btn"
 
 let liveCelebrationTriggered = false;
 
-let simulatedLovelies = 26;
-setInterval(() => {
-  const delta = (Math.random() > 0.45 ? 1 : -1) * (Math.floor(Math.random() * 2));
-  simulatedLovelies = Math.max(16, Math.min(92, simulatedLovelies + delta));
-  if (livePresenceCount) livePresenceCount.textContent = simulatedLovelies;
-}, 3500);
+// Real Live Room Presence (No fake bots)
+let realPresence = 1;
+try {
+  const channel = new BroadcastChannel('sikadev_live_room');
+  channel.postMessage({ type: 'join' });
+  channel.onmessage = (e) => {
+    if (e.data && e.data.type === 'join') {
+      realPresence++;
+      if (livePresenceCount) livePresenceCount.textContent = realPresence;
+      channel.postMessage({ type: 'presence', count: realPresence });
+    } else if (e.data && e.data.type === 'presence' && e.data.count) {
+      realPresence = Math.max(realPresence, e.data.count);
+      if (livePresenceCount) livePresenceCount.textContent = realPresence;
+    }
+  };
+} catch (e) {}
+if (livePresenceCount) livePresenceCount.textContent = realPresence;
 
 function updateLiveCountdown() {
   const target = new Date(SIKADEV_CONFIG.liveCelebrationTime).getTime();
@@ -1425,6 +1437,12 @@ if (dismissLiveOverlayBtn && liveEventOverlay) {
 function updateLiveWishTicker() {
   const ticker = document.getElementById("ticker-content");
   if (!ticker) return;
+
+  if (wishes.length === 0) {
+    const livePrompt = "✨ Sikadev's Virtual Birthday Room is LIVE! 🎂 Pin your birthday wish to orbit in 3D & celebrate live! 🚀";
+    ticker.textContent = livePrompt + "  •  " + livePrompt;
+    return;
+  }
 
   const tickerText = wishes.map(w => `🌟 "${w.message}" — ${w.name} (${w.vibe})`).join("  •  ");
   ticker.textContent = tickerText + "  •  " + tickerText;
@@ -2135,7 +2153,7 @@ function saveWishLocally(name, message, vibe) {
   };
   wishes.unshift(newWish);
   try {
-    localStorage.setItem("sikadev_bday_wishes", JSON.stringify(wishes));
+    localStorage.setItem("sikadev_live_wishes", JSON.stringify(wishes));
   } catch (err) {}
 
   createWishOrbs();
@@ -2161,7 +2179,25 @@ closeWishesDrawerBtn.addEventListener("click", () => {
 function renderWishesDrawer() {
   wishesListContainer.innerHTML = "";
   if (wishes.length === 0) {
-    wishesListContainer.innerHTML = `<p class="text-sm text-gray-400">No wishes pinned yet. Be the first!</p>`;
+    wishesListContainer.innerHTML = `
+      <div class="text-center py-10 px-4 bg-white/5 rounded-2xl border border-dashed border-white/10">
+        <span class="text-3xl">💌</span>
+        <p class="text-sm font-bold text-white mt-2">No Wishes Pinned Yet</p>
+        <p class="text-xs text-purple-300/70 mt-1">Be the first lovely to pin a wish in the sky!</p>
+        <button id="drawer-pin-wish-btn" class="mt-4 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-black font-extrabold text-xs shadow-md active:scale-95 transition-all">
+          + Pin Your Wish Now ✨
+        </button>
+      </div>
+    `;
+    const drawerPinBtn = document.getElementById("drawer-pin-wish-btn");
+    if (drawerPinBtn) {
+      drawerPinBtn.addEventListener("click", () => {
+        wishesDrawer.classList.remove("active");
+        const wishModal = document.getElementById("wish-modal");
+        if (wishModal) wishModal.classList.add("active");
+        initAudio();
+      });
+    }
     return;
   }
 

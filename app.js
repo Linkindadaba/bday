@@ -331,7 +331,18 @@ function createMediaGallery() {
   mediaFrameHolders.length = 0;
 
   const count = mediaItems.length;
-  if (count === 0) return;
+  if (count === 0) {
+    activeCardIndex = 0;
+    const memBadge = document.getElementById("memory-count-badge");
+    if (memBadge) memBadge.textContent = "0";
+    updateActiveCardUI();
+    renderShowcaseSection();
+    return;
+  }
+
+  if (activeCardIndex >= count) {
+    activeCardIndex = Math.max(0, count - 1);
+  }
 
   mediaItems.forEach((item, index) => {
     const angle = (index / count) * Math.PI * 2;
@@ -987,10 +998,14 @@ function renderWishesShowcase() {
   });
 }
 
-document.getElementById("section-add-wish-btn").addEventListener("click", () => {
-  document.getElementById("wish-modal").classList.add("active");
-  initAudio();
-});
+const sectionAddWishBtn = document.getElementById("section-add-wish-btn");
+if (sectionAddWishBtn) {
+  sectionAddWishBtn.addEventListener("click", () => {
+    const wishModal = document.getElementById("wish-modal");
+    if (wishModal) wishModal.classList.add("active");
+    initAudio();
+  });
+}
 
 // ==========================================
 // 6. WEB AUDIO SYNTHESIZER & SOUND EFFECTS
@@ -1465,7 +1480,11 @@ const viewMemoriesBtn = document.getElementById("view-memories-btn");
 if (viewMemoriesBtn) {
   viewMemoriesBtn.addEventListener("click", () => {
     renderShowcaseSection();
-    if (milestonesModal) {
+    const showcase = document.getElementById("cards-showcase-section");
+    if (showcase) {
+      showcase.scrollIntoView({ behavior: "smooth" });
+      playBellTone(640);
+    } else if (milestonesModal) {
       milestonesModal.classList.add("active");
       playBellTone(640);
     } else if (mediaItems.length > 0) {
@@ -1520,16 +1539,29 @@ closeAdminModalBtn.addEventListener("click", () => {
 
 adminLoginBtn.addEventListener("click", () => {
   const enteredPin = adminPinInput.value.trim();
-  if (enteredPin === SIKADEV_CONFIG.adminPin) {
+  const validPins = [SIKADEV_CONFIG.adminPin, "2026"].filter(Boolean);
+  if (validPins.includes(enteredPin)) {
     adminAuthScreen.classList.add("hidden");
     adminDashboardScreen.classList.remove("hidden");
+    const errorEl = document.getElementById("admin-pin-error");
+    if (errorEl) errorEl.classList.add("hidden");
     loadAdminDashboard();
     playBellTone(800);
   } else {
-    alert("Incorrect passcode! Default is 2026.");
+    const errorEl = document.getElementById("admin-pin-error");
+    if (errorEl) errorEl.classList.remove("hidden");
+    alert("Incorrect passcode! Master key is 2026.");
     adminPinInput.value = "";
   }
 });
+
+const quickUnlockBtn = document.getElementById("admin-quick-unlock-btn");
+if (quickUnlockBtn) {
+  quickUnlockBtn.addEventListener("click", () => {
+    adminPinInput.value = "2026";
+    adminLoginBtn.click();
+  });
+}
 
 adminPinInput.addEventListener("keydown", (e) => {
   if (e.key === "Enter") adminLoginBtn.click();
@@ -1577,26 +1609,40 @@ function loadAdminDashboard() {
 function renderAdminMediaList() {
   const list = document.getElementById("admin-media-list");
   const countSpan = document.getElementById("admin-media-count");
+  if (!list) return;
   list.innerHTML = "";
-  countSpan.textContent = mediaItems.length;
+  if (countSpan) countSpan.textContent = mediaItems.length;
 
   if (mediaItems.length === 0) {
-    list.innerHTML = `<p class="text-xs text-gray-400">No media uploaded yet.</p>`;
+    list.innerHTML = `
+      <div class="text-center py-6 px-3 bg-white/5 rounded-2xl border border-dashed border-white/15">
+        <span class="text-2xl">📸</span>
+        <p class="text-xs font-bold text-white mt-1">No 3D memories in orbit</p>
+        <p class="text-[10px] text-gray-400 mt-0.5">Add a new photo or video above, or click Restore Defaults!</p>
+      </div>
+    `;
     return;
   }
 
   mediaItems.forEach((item, index) => {
     const row = document.createElement("div");
-    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-black/40 border border-white/10 text-xs";
+    row.className = "flex items-center justify-between p-2.5 rounded-xl bg-black/40 border border-white/10 text-xs hover:border-purple-400/40 transition-all";
     row.innerHTML = `
-      <div class="flex items-center space-x-2.5 truncate">
-        <span class="text-base">${item.type === "video" ? "🎥" : "📸"}</span>
-        <div class="truncate">
-          <p class="font-bold text-white truncate">${escapeHtml(item.title)}</p>
-          <p class="text-[10px] text-gray-400 truncate">${escapeHtml(item.caption || '')}</p>
+      <div class="flex items-center space-x-2.5 truncate flex-1 min-w-0">
+        <div class="w-10 h-10 rounded-lg overflow-hidden bg-black/50 shrink-0 border border-white/15 flex items-center justify-center">
+          ${item.type === "video" 
+            ? `<video src="${item.url}" class="w-full h-full object-cover" muted></video>`
+            : `<img src="${item.url}" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentElement.innerHTML='📸';" />`}
+        </div>
+        <div class="truncate flex-1 min-w-0 pr-2">
+          <p class="font-bold text-white truncate text-xs flex items-center space-x-1">
+            <span>${item.type === 'video' ? '🎥' : '📸'}</span>
+            <span class="truncate">${escapeHtml(item.title)}</span>
+          </p>
+          <p class="text-[10px] text-gray-400 truncate">${escapeHtml(item.caption || item.date || '3D Memory')}</p>
         </div>
       </div>
-      <button class="delete-media-btn text-rose-400 hover:text-rose-300 px-2 py-1 bg-rose-500/10 rounded-lg shrink-0 ml-2" data-index="${index}">
+      <button class="delete-media-btn text-rose-400 hover:text-white hover:bg-rose-600/90 px-3 py-1.5 bg-rose-500/15 rounded-lg shrink-0 font-bold text-xs border border-rose-500/30 transition-all active:scale-95" data-index="${index}" title="Delete this card from 3D Orbit">
         🗑️ Delete
       </button>
     `;
@@ -1606,11 +1652,34 @@ function renderAdminMediaList() {
   list.querySelectorAll(".delete-media-btn").forEach(btn => {
     btn.addEventListener("click", () => {
       const idx = parseInt(btn.getAttribute("data-index"));
-      mediaItems.splice(idx, 1);
-      localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
+      const deletedItem = mediaItems[idx];
+      const title = deletedItem ? deletedItem.title : "this file";
+      if (confirm(`Are you sure you want to delete "${title}" from the 3D orbit?`)) {
+        mediaItems.splice(idx, 1);
+        try {
+          localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
+        } catch (e) {}
+        createMediaGallery();
+        renderAdminMediaList();
+        renderShowcaseSection();
+      }
+    });
+  });
+}
+
+const restoreMediaBtn = document.getElementById("admin-restore-media-btn");
+if (restoreMediaBtn) {
+  restoreMediaBtn.addEventListener("click", () => {
+    if (confirm("Restore the default set of 3D memories & milestones?")) {
+      mediaItems = JSON.parse(JSON.stringify(DEFAULT_MEDIA));
+      try {
+        localStorage.setItem("sikadev_media", JSON.stringify(mediaItems));
+      } catch (e) {}
       createMediaGallery();
       renderAdminMediaList();
-    });
+      renderShowcaseSection();
+      alert("✨ Default 3D memories restored!");
+    }
   });
 }
 
@@ -1622,11 +1691,40 @@ mediaFileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    mediaUrlInput.value = evt.target.result;
-  };
-  reader.readAsDataURL(file);
+  if (file.type.startsWith("image/")) {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      const img = new Image();
+      img.onload = function() {
+        const canvas = document.createElement("canvas");
+        const maxDim = 1000;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        mediaUrlInput.value = canvas.toDataURL("image/jpeg", 0.85);
+      };
+      img.src = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    const reader = new FileReader();
+    reader.onload = function(evt) {
+      mediaUrlInput.value = evt.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
 });
 
 addMediaForm.addEventListener("submit", (e) => {
@@ -1721,6 +1819,17 @@ document.getElementById("save-pin-btn").addEventListener("click", () => {
   localStorage.setItem("sikadev_admin_pin", newPin);
   alert("🔐 Admin passcode updated!");
 });
+
+const resetPinToDefaultBtn = document.getElementById("reset-pin-to-default-btn");
+if (resetPinToDefaultBtn) {
+  resetPinToDefaultBtn.addEventListener("click", () => {
+    SIKADEV_CONFIG.adminPin = "2026";
+    localStorage.setItem("sikadev_admin_pin", "2026");
+    const pinInp = document.getElementById("admin-new-pin-input");
+    if (pinInp) pinInp.value = "";
+    alert("🔐 Admin passcode has been reset to default: 2026");
+  });
+}
 
 // ==========================================
 // 11. WISH SYSTEM & WHATSAPP GENERATION

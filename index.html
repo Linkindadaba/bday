@@ -103,12 +103,68 @@
     <button class="reaction-tap-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-base sm:text-lg transition-transform active:scale-125 shadow-lg" data-emoji="🚀" title="Send Rocket">🚀</button>
   </div>
 
-  <!-- HERO 3D STAGE & INTERACTIVE CONTROLS -->
-  <main class="relative z-10 w-full max-w-6xl mx-auto px-4 pt-3 sm:pt-4 flex flex-col items-center min-h-[85vh] justify-between pb-8 pointer-events-none">
+  <!-- FLOATING MINIMAL VIDEO CARD BOX FOR BLOWING (Docked in Corner - NEVER blocks center cake!) -->
+  <div id="video-card-box" class="pointer-events-auto fixed top-20 right-3 sm:right-6 z-30 w-44 sm:w-52 aspect-[3/4] rounded-3xl bg-[#0c0e22]/95 border border-purple-500/40 p-2 sm:p-2.5 shadow-2xl shadow-purple-950/70 backdrop-blur-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden hover:border-pink-500/60">
+    <!-- Video Card Top Bar -->
+    <div class="flex items-center justify-between px-1 pt-0.5 text-xs z-10">
+      <div class="flex items-center space-x-1.5">
+        <span id="cam-active-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+        <span id="video-card-status" class="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-purple-200">Video Cam</span>
+      </div>
+      <button id="toggle-card-cam-btn" class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-600/30 hover:bg-purple-600/50 text-white transition-all border border-purple-400/40 active:scale-95 flex items-center space-x-1">
+        <span id="cam-btn-icon">📹</span>
+        <span id="cam-btn-label">Start Cam</span>
+      </button>
+    </div>
+
+    <!-- Video Screen Viewport -->
+    <div class="relative flex-1 w-full rounded-2xl overflow-hidden bg-black/60 my-1.5 flex items-center justify-center border border-white/10 shadow-inner group cursor-pointer">
+      <!-- Active Selfie Video -->
+      <video id="webcam-video" autoplay playsinline muted class="hidden w-full h-full object-cover transform -scale-x-100"></video>
+      
+      <!-- Placeholder when camera is off -->
+      <div id="webcam-placeholder" class="flex flex-col items-center justify-center p-2 text-center space-y-1">
+        <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-purple-600/30 border border-purple-400/40 flex items-center justify-center text-base sm:text-lg shadow-lg shadow-purple-900/40 group-hover:scale-110 transition-transform">
+          📹
+        </div>
+        <span class="text-[11px] font-bold text-white">Live Blow Cam</span>
+        <p class="text-[9px] text-purple-300/70 max-w-[130px] leading-tight">Tap to turn on camera & blow candles!</p>
+      </div>
+
+      <!-- Integrated Blow Wind Meter Overlay (at bottom of video card) -->
+      <div class="absolute inset-x-0 bottom-0 p-1.5 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col items-center z-10">
+        <div class="w-full flex items-center justify-between text-[9px] text-purple-200 mb-0.5 font-semibold">
+          <span class="flex items-center space-x-1">
+            <span>💨</span>
+            <span id="card-blow-label">Blow at Cam</span>
+          </span>
+          <span id="card-wind-pct" class="font-bold text-amber-300">0%</span>
+        </div>
+        <div class="w-full h-1.5 bg-white/10 rounded-full overflow-hidden p-[1px]">
+          <div id="card-wind-bar" class="h-full bg-gradient-to-r from-cyan-400 via-pink-400 to-amber-400 rounded-full w-0 transition-all duration-75"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Card Bottom Action Bar -->
+    <div class="flex items-center justify-between px-0.5 z-10 text-[9px] sm:text-[10px]">
+      <button id="snap-photo-btn" class="px-2 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold border border-amber-400/30 flex items-center space-x-1 transition-all active:scale-95" title="Take a celebration snapshot">
+        <span>📸</span>
+        <span>Snap</span>
+      </button>
+
+      <button id="card-quick-blow-btn" class="px-2 py-1 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 font-bold border border-pink-500/30 flex items-center space-x-1 transition-all active:scale-95">
+        <span>💨</span>
+        <span>Tap Blow</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- HERO 3D STAGE & INTERACTIVE CONTROLS (Full Screen dedicated to 3D Universe!) -->
+  <main class="relative z-10 w-full max-w-5xl mx-auto px-4 min-h-screen flex flex-col justify-between pt-3 pb-8 pointer-events-none">
     
     <!-- Top Stage Header: Title & Celebration Status Pill -->
-    <div class="pointer-events-auto flex flex-col items-center text-center space-y-2 max-w-2xl mx-auto">
-      
+    <div class="pointer-events-auto flex flex-col items-center text-center space-y-2 max-w-2xl mx-auto mt-2">
       <!-- Status Pill -->
       <div id="status-pill" class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium animate-bounce-slow">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -123,80 +179,15 @@
         </span>
       </h2>
       <p class="text-xs sm:text-sm text-purple-200/80 max-w-md">
-        Look into the video card, blow out the 3D candles & explore rotating memory cards! ✨
+        Make a wish, blow out the 3D candles & explore rotating memory cards! ✨
       </p>
     </div>
 
-    <!-- DESKTOP / MOBILE STAGE ROW (Cake in center, Video Card Box docked neatly on the side) -->
-    <div class="w-full flex flex-col lg:flex-row items-center justify-between my-auto pointer-events-none relative py-2">
-      
-      <!-- Left spacer for desktop balance -->
-      <div class="hidden lg:block w-64 pointer-events-none"></div>
+    <!-- Center Stage is COMPLETELY OPEN & UNOBSTRUCTED for the 3D Cake & Orbiting Mirrors! -->
+    <div class="flex-1 pointer-events-none min-h-[300px]"></div>
 
-      <!-- Center Cake & Orbiting Mirrors focal area is open in 3D WebGL! -->
-      <div class="pointer-events-none flex-1"></div>
-
-      <!-- THE MINIMAL LIVE VIDEO CARD BOX FOR BLOWING (Visible, Sleek, Interactive!) -->
-      <div id="video-card-box" class="pointer-events-auto w-full max-w-[240px] sm:max-w-[260px] mx-auto lg:mx-0 lg:ml-auto aspect-[3/4] rounded-3xl bg-[#0c0e22]/90 border border-purple-500/40 p-2.5 shadow-2xl shadow-purple-950/60 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden hover:border-pink-500/60 my-2 lg:my-0">
-        
-        <!-- Video Card Top Bar -->
-        <div class="flex items-center justify-between px-1.5 pt-0.5 text-xs z-10">
-          <div class="flex items-center space-x-1.5">
-            <span id="cam-active-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
-            <span id="video-card-status" class="text-[10px] font-bold uppercase tracking-wider text-purple-200">Video Cam</span>
-          </div>
-          <button id="toggle-card-cam-btn" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-600/30 hover:bg-purple-600/50 text-white transition-all border border-purple-400/40 active:scale-95 flex items-center space-x-1">
-            <span id="cam-btn-icon">📹</span>
-            <span id="cam-btn-label">Start Cam</span>
-          </button>
-        </div>
-
-        <!-- Video Screen Viewport -->
-        <div class="relative flex-1 w-full rounded-2xl overflow-hidden bg-black/60 my-2 flex items-center justify-center border border-white/10 shadow-inner group cursor-pointer">
-          <!-- Active Selfie Video -->
-          <video id="webcam-video" autoplay playsinline muted class="hidden w-full h-full object-cover transform -scale-x-100"></video>
-          
-          <!-- Placeholder when camera is off -->
-          <div id="webcam-placeholder" class="flex flex-col items-center justify-center p-3 text-center space-y-1.5">
-            <div class="w-10 h-10 rounded-2xl bg-purple-600/30 border border-purple-400/40 flex items-center justify-center text-xl shadow-lg shadow-purple-900/40 group-hover:scale-110 transition-transform">
-              📹
-            </div>
-            <span class="text-xs font-bold text-white">Live Blow Cam</span>
-            <p class="text-[10px] text-purple-300/70 max-w-[160px] leading-tight">Tap to turn on your camera and blow candles live!</p>
-          </div>
-
-          <!-- Integrated Blow Wind Meter Overlay (at bottom of video card) -->
-          <div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col items-center z-10">
-            <div class="w-full flex items-center justify-between text-[10px] text-purple-200 mb-0.5 font-semibold">
-              <span class="flex items-center space-x-1">
-                <span>💨</span>
-                <span id="card-blow-label">Blow into Mic</span>
-              </span>
-              <span id="card-wind-pct" class="font-bold text-amber-300">0%</span>
-            </div>
-            <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden p-[1px]">
-              <div id="card-wind-bar" class="h-full bg-gradient-to-r from-cyan-400 via-pink-400 to-amber-400 rounded-full w-0 transition-all duration-75"></div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Video Card Bottom Action Bar -->
-        <div class="flex items-center justify-between px-1 z-10 text-[10px]">
-          <button id="snap-photo-btn" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold border border-amber-400/30 flex items-center space-x-1 transition-all active:scale-95" title="Take a celebration snapshot">
-            <span>📸</span>
-            <span>Snap Photo</span>
-          </button>
-
-          <button id="card-quick-blow-btn" class="px-2.5 py-1 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 font-bold border border-pink-500/30 flex items-center space-x-1 transition-all active:scale-95">
-            <span>💨</span>
-            <span>Tap to Blow</span>
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- LOWER HERO CONTROLS & 3D ROTATION NAVIGATOR (Uncluttered, Balanced & Accessible) -->
-    <div class="pointer-events-auto flex flex-col items-center space-y-3 w-full max-w-xl mx-auto mt-2">
+    <!-- LOWER HERO CONTROLS & 3D ROTATION NAVIGATOR -->
+    <div class="pointer-events-auto flex flex-col items-center space-y-3 w-full max-w-xl mx-auto mb-2">
       
       <!-- Primary Action Buttons Row -->
       <div class="flex flex-wrap items-center justify-center gap-2 w-full">
@@ -243,8 +234,55 @@
         <button id="next-card-btn" class="text-purple-300 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition-all font-bold">▶</button>
       </div>
 
+      <!-- Scroll Indicator to Explore Below the Fold -->
+      <div id="scroll-prompt-btn" class="cursor-pointer text-xs text-purple-300/70 hover:text-white flex items-center space-x-1.5 transition-colors pt-1 animate-bounce-slow">
+        <span>↓ Scroll for Memories & Wishes Gallery</span>
+      </div>
     </div>
   </main>
+
+  <!-- MOMENTS & MILESTONES SHOWCASE SECTION (Positioned BELOW the 3D stage with solid cosmic backdrop so it NEVER overlaps the 3D cake!) -->
+  <section id="cards-showcase-section" class="relative z-10 w-full bg-[#080918] border-t border-purple-500/25 shadow-[0_-30px_70px_rgba(0,0,0,0.95)] pt-20 pb-32 px-4 pointer-events-auto">
+    <div class="max-w-5xl mx-auto">
+      <div class="text-center mb-12">
+        <span class="px-3.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 text-xs font-bold uppercase tracking-widest">
+          Moments & Milestones
+        </span>
+        <h3 class="text-3xl sm:text-4xl font-black font-['Outfit'] text-white mt-2">
+          Sikadev's Memory & Milestone Cards
+        </h3>
+        <p class="text-xs sm:text-sm text-purple-200/70 max-w-md mx-auto mt-1">
+          Explore highlights & stories from this year. Tap any card to rotate the 3D Universe and view it up close!
+        </p>
+      </div>
+
+      <!-- 3D Memory Cards Showcase Grid -->
+      <div class="mb-16">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-base sm:text-lg font-bold text-amber-300 flex items-center space-x-2 font-['Outfit']">
+            <span>📸</span>
+            <span>Featured 3D Memories</span>
+          </h4>
+          <span class="text-xs text-purple-300/50 hidden sm:inline">Tap card to inspect in 3D</span>
+        </div>
+        <div id="memory-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+      </div>
+
+      <!-- The Lovelies' Wishes Wall Grid -->
+      <div class="mb-16">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="text-base sm:text-lg font-bold text-pink-400 flex items-center space-x-2 font-['Outfit']">
+            <span>💌</span>
+            <span>The Lovelies' Wishes Wall</span>
+          </h4>
+          <button id="section-add-wish-btn" class="text-xs font-bold text-amber-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 transition-all">
+            + Add Your Wish
+          </button>
+        </div>
+        <div id="wishes-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+    </div>
+  </section>
 
   <!-- LIVE WISH TICKER BAR (Slim at bottom edge) -->
   <div id="live-wish-ticker" class="fixed bottom-0 inset-x-0 z-20 bg-[#070812]/90 backdrop-blur-md border-t border-purple-500/15 py-1 px-4 overflow-hidden flex items-center text-xs">
@@ -254,28 +292,6 @@
     </div>
     <div class="overflow-hidden whitespace-nowrap w-full ml-2">
       <div id="ticker-content" class="inline-block text-purple-200 font-medium animate-marquee"></div>
-    </div>
-  </div>
-
-  <!-- DEDICATED MILESTONES & MOMENTS GALLERY MODAL (Cleanly away from main 3D stage) -->
-  <div id="milestones-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-300">
-    <div class="relative w-full max-w-5xl bg-[#0c0e24] border border-purple-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl text-left transform scale-95 transition-all duration-300 max-h-[88vh] overflow-y-auto">
-      <button id="close-milestones-modal" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/10 hover:bg-white/20 rounded-full w-9 h-9 flex items-center justify-center text-sm transition-all">✕</button>
-
-      <div class="text-center mb-6">
-        <span class="px-3.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 text-xs font-bold uppercase tracking-widest">
-          Moments & Milestones
-        </span>
-        <h3 class="text-2xl sm:text-4xl font-black font-['Outfit'] text-white mt-2">
-          Sikadev's Memory & Milestone Cards
-        </h3>
-        <p class="text-xs sm:text-sm text-purple-200/70 max-w-md mx-auto mt-1">
-          Explore highlights & stories. Tap any card to rotate the 3D Universe and view it up close!
-        </p>
-      </div>
-
-      <!-- 3D Memory Cards Grid -->
-      <div id="memory-cards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
     </div>
   </div>
 
@@ -345,16 +361,20 @@
         <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-3xl">🔐</div>
         <h3 class="text-2xl font-black font-['Outfit'] text-white">Sikadev's Admin Studio</h3>
         <p class="text-xs text-purple-300/80 max-w-sm mx-auto">
-          Enter your 4-digit passcode to manage 3D photos/videos, set celebration schedule, and update WhatsApp.
+          Enter your passcode to manage 3D photos/videos, set celebration schedule, and update WhatsApp.
         </p>
-        <div class="max-w-xs mx-auto">
+        <div class="max-w-xs mx-auto space-y-2">
           <input type="password" id="admin-pin-input" maxlength="8" placeholder="Enter PIN (Default: 2026)" class="w-full text-center tracking-widest text-xl bg-white/5 border border-amber-400/40 focus:border-amber-400 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none" />
-          <p id="admin-pin-error" class="hidden text-xs text-rose-400 mt-2">Incorrect PIN. Try default '2026'.</p>
+          <p id="admin-pin-error" class="hidden text-xs text-rose-400">Incorrect PIN. Try default '2026'.</p>
         </div>
         <button id="admin-login-btn" class="w-full max-w-xs mx-auto py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-sm shadow-lg shadow-amber-500/30 transition-all active:scale-95">
           Enter Studio 🚀
         </button>
-        <p class="text-[10px] text-gray-500">Default passcode is 2026</p>
+        <div class="pt-1">
+          <button type="button" id="admin-quick-unlock-btn" class="text-xs text-amber-300/90 hover:text-amber-200 underline font-medium transition-colors">
+            Forgot PIN? Click to auto-unlock with default (2026) 🔑
+          </button>
+        </div>
       </div>
 
       <!-- Dashboard Screen -->
@@ -419,7 +439,15 @@
 
           <!-- Existing Media List -->
           <div>
-            <h4 class="text-xs font-bold text-purple-200 mb-2 uppercase tracking-wider">Current 3D Cards</h4>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-bold text-purple-200 uppercase tracking-wider flex items-center space-x-1.5">
+                <span>Current 3D Cards</span>
+                <span id="admin-media-count" class="px-2 py-0.5 rounded-full bg-purple-500/20 text-amber-300 font-mono text-[10px] border border-purple-400/30">0</span>
+              </h4>
+              <button type="button" id="admin-restore-media-btn" class="text-[11px] text-amber-300/80 hover:text-amber-200 underline">
+                ↺ Restore Defaults
+              </button>
+            </div>
             <div id="admin-media-list" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
           </div>
         </div>
@@ -472,6 +500,9 @@
             <input type="password" id="admin-new-pin-input" placeholder="New 4-8 digit PIN" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
             <button type="button" id="save-pin-btn" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition-all">
               Update PIN 🔐
+            </button>
+            <button type="button" id="reset-pin-to-default-btn" class="w-full py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-amber-300/80 hover:text-amber-200 transition-all">
+              Reset Passcode to Default (2026) 🔑
             </button>
           </div>
         </div>

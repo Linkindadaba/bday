@@ -1569,6 +1569,12 @@ function openPublicMomentModal() {
 if (openPostMomentBtn) openPostMomentBtn.addEventListener("click", openPublicMomentModal);
 if (sectionPostMomentBtn) sectionPostMomentBtn.addEventListener("click", openPublicMomentModal);
 
+document.addEventListener("click", (e) => {
+  if (e.target.closest("#open-post-moment-btn") || e.target.closest("#section-post-moment-btn") || e.target.closest("#empty-post-moment-btn") || e.target.closest(".open-post-moment-trigger")) {
+    openPublicMomentModal();
+  }
+});
+
 if (closePostMomentModalBtn) {
   closePostMomentModalBtn.addEventListener("click", () => {
     if (postMomentModal) postMomentModal.classList.remove("active");

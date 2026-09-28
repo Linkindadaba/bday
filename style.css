@@ -91,6 +91,7 @@ html {
 
 /* Modal Open animations */
 #wish-modal.active,
+#post-moment-modal.active,
 #admin-modal.active,
 #media-inspect-modal.active,
 #snapshot-modal.active,
@@ -100,6 +101,7 @@ html {
 }
 
 #wish-modal.active > div,
+#post-moment-modal.active > div,
 #admin-modal.active > div,
 #media-inspect-modal.active > div,
 #snapshot-modal.active > div,

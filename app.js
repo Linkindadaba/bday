@@ -137,6 +137,8 @@ scene.add(blueRimLight);
 
 const universeGroup = new THREE.Group();
 scene.add(universeGroup);
+window.scene = scene;
+window.universeGroup = universeGroup;
 
 // Procedural Starfield
 const starCount = 1400;
@@ -420,6 +422,9 @@ function createMediaGallery() {
 }
 
 createMediaGallery();
+window.cakeGroup = cakeGroup;
+window.candles = candles;
+window.mediaFrameHolders = mediaFrameHolders;
 
 // Floating Wish Orbs
 const wishOrbsGroup = new THREE.Group();
@@ -484,14 +489,17 @@ createWishOrbs();
 // ==========================================
 // 3. MINIMAL LIVE VIDEO BLOW CARD BOX
 // ==========================================
-const videoCardBox = document.getElementById("video-card-box");
 const toggleCardCamBtn = document.getElementById("toggle-card-cam-btn");
-const closeCardCamBtn = document.getElementById("close-card-cam-btn");
 const camBtnIcon = document.getElementById("cam-btn-icon");
 const camBtnLabel = document.getElementById("cam-btn-label");
+const camActiveDot = document.getElementById("cam-active-dot");
+const videoCardStatus = document.getElementById("video-card-status");
+const liveVideoBadge = document.getElementById("live-video-badge");
 const webcamVideo = document.getElementById("webcam-video");
+const webcamPlaceholder = document.getElementById("webcam-placeholder");
 const cardWindBar = document.getElementById("card-wind-bar");
 const cardWindPct = document.getElementById("card-wind-pct");
+const cardBlowLabel = document.getElementById("card-blow-label");
 const cardQuickBlowBtn = document.getElementById("card-quick-blow-btn");
 
 toggleCardCamBtn.addEventListener("click", async () => {
@@ -502,9 +510,11 @@ toggleCardCamBtn.addEventListener("click", async () => {
   }
 });
 
-closeCardCamBtn.addEventListener("click", () => {
-  closeVideoCard();
-});
+if (webcamPlaceholder) {
+  webcamPlaceholder.addEventListener("click", async () => {
+    if (!isVideoCardOpen) await openVideoCard();
+  });
+}
 
 async function openVideoCard() {
   initAudio();
@@ -518,18 +528,30 @@ async function openVideoCard() {
     await webcamVideo.play();
 
     isVideoCardOpen = true;
-    videoCardBox.classList.remove("hidden");
+    webcamVideo.classList.remove("hidden");
+    if (webcamPlaceholder) webcamPlaceholder.classList.add("hidden");
+
+    if (camActiveDot) {
+      camActiveDot.classList.remove("bg-gray-500");
+      camActiveDot.classList.add("bg-emerald-400", "animate-pulse");
+    }
+    if (videoCardStatus) {
+      videoCardStatus.textContent = "🔴 LIVE CAM";
+      videoCardStatus.classList.add("text-rose-400");
+    }
+    if (liveVideoBadge) liveVideoBadge.classList.remove("hidden");
 
     camBtnLabel.textContent = "Stop Cam";
     camBtnIcon.textContent = "⏹️";
+    if (cardBlowLabel) cardBlowLabel.textContent = "Blow at camera!";
 
-    statusText.textContent = "Live Cam active! Look into the card & blow candles! 🎂💨";
+    statusText.textContent = "Live Cam active! Look into the card & blow out the candles! 🎂💨";
     connectStreamToMicAnalyzer(userMediaStream);
     playBellTone(880);
-    confetti({ particleCount: 20, spread: 45 });
+    confetti({ particleCount: 25, spread: 50 });
   } catch (err) {
     console.error("Camera access error:", err);
-    alert("Camera permission denied. You can still blow or use the buttons!");
+    alert("Camera permission was not granted. You can still blow into the mic or tap 'Tap to Blow'!");
   }
 }
 
@@ -541,9 +563,22 @@ function closeVideoCard() {
   webcamVideo.srcObject = null;
   isVideoCardOpen = false;
 
-  videoCardBox.classList.add("hidden");
-  camBtnLabel.textContent = "Live Cam";
+  webcamVideo.classList.add("hidden");
+  if (webcamPlaceholder) webcamPlaceholder.classList.remove("hidden");
+
+  if (camActiveDot) {
+    camActiveDot.classList.add("bg-gray-500");
+    camActiveDot.classList.remove("bg-emerald-400", "animate-pulse");
+  }
+  if (videoCardStatus) {
+    videoCardStatus.textContent = "VIDEO CAM";
+    videoCardStatus.classList.remove("text-rose-400");
+  }
+  if (liveVideoBadge) liveVideoBadge.classList.add("hidden");
+
+  camBtnLabel.textContent = "Start Cam";
   camBtnIcon.textContent = "📹";
+  if (cardBlowLabel) cardBlowLabel.textContent = "Blow into Mic";
 
   cardWindBar.style.width = "0%";
   cardWindPct.textContent = "0%";
@@ -684,7 +719,7 @@ function spawnFloatingReaction(emoji) {
 // ==========================================
 let isDragging = false;
 let previousMousePosition = { x: 0, y: 0 };
-let targetRotationY = 0;
+let targetRotationY = Math.PI / 2;
 let targetRotationX = 0.15;
 let rotationSpeed = 0.0055;
 
@@ -694,7 +729,7 @@ function rotateToCard(index) {
 
   const count = mediaItems.length;
   const angle = (activeCardIndex / count) * Math.PI * 2;
-  targetRotationY = -angle - Math.PI / 2;
+  targetRotationY = Math.PI / 2 - angle;
 
   updateActiveCardUI();
   playBellTone(640);
@@ -742,7 +777,7 @@ window.addEventListener('wheel', (e) => {
 function detectNearestCard() {
   if (mediaItems.length === 0) return;
   const count = mediaItems.length;
-  const normalizedAngle = (-targetRotationY - Math.PI / 2) % (Math.PI * 2);
+  const normalizedAngle = (Math.PI / 2 - targetRotationY) % (Math.PI * 2);
   const positiveAngle = (normalizedAngle + Math.PI * 2) % (Math.PI * 2);
   const estimatedIndex = Math.round((positiveAngle / (Math.PI * 2)) * count) % count;
 
@@ -1039,9 +1074,11 @@ function playBirthdayFanfare() {
 }
 
 const soundBtn = document.getElementById("sound-btn");
+const soundState = document.getElementById("sound-state");
 soundBtn.addEventListener("click", () => {
   initAudio();
   soundEnabled = !soundEnabled;
+  if (soundState) soundState.textContent = soundEnabled ? "On" : "Off";
   soundBtn.classList.toggle("text-amber-300", soundEnabled);
   soundBtn.classList.toggle("border-amber-400", soundEnabled);
   if (soundEnabled) playBellTone(660);
@@ -1057,6 +1094,7 @@ let candlesExtinguished = false;
 let blowEnergyAccumulator = 0;
 
 const statusText = document.getElementById("status-text");
+const statusPill = document.getElementById("status-pill");
 const relightBtn = document.getElementById("relight-btn");
 const micTriggerBtn = document.getElementById("mic-trigger-btn");
 const micBtnText = document.getElementById("mic-btn-text");
@@ -1157,6 +1195,10 @@ function extinguishCandles(triggerType = "manual") {
   spawnSmokeParticles();
 
   statusText.textContent = "🎉 CANDLES BLOWN! HAPPY BIRTHDAY SIKADEV! 🚀✨";
+  if (statusPill) {
+    statusPill.classList.add("border-amber-400", "bg-amber-500/20");
+  }
+
   playBirthdayFanfare();
   launchCelebrationConfetti();
 
@@ -1182,10 +1224,13 @@ function relightCandles() {
   candleLights.forEach(light => light.intensity = 1.5);
 
   statusText.textContent = "Candles relit! Ready to blow again! 🎂";
+  if (statusPill) {
+    statusPill.classList.remove("border-amber-400", "bg-amber-500/20");
+  }
 
   relightBtn.classList.add("hidden");
   micTriggerBtn.classList.remove("hidden");
-  micBtnText.textContent = "Blow";
+  if (micBtnText) micBtnText.textContent = "Blow Out Candles";
   cardWindBar.style.width = "0%";
   cardWindPct.textContent = "0%";
 
@@ -1322,10 +1367,12 @@ function triggerSynchronizedLiveCelebration() {
   }, 1000);
 }
 
-dismissLiveOverlayBtn.addEventListener("click", () => {
-  liveEventOverlay.classList.remove("active");
-  extinguishCandles("manual");
-});
+if (dismissLiveOverlayBtn && liveEventOverlay) {
+  dismissLiveOverlayBtn.addEventListener("click", () => {
+    liveEventOverlay.classList.remove("active");
+    extinguishCandles("manual");
+  });
+}
 
 function updateLiveWishTicker() {
   const ticker = document.getElementById("ticker-content");

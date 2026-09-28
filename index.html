@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>🎂 Sikadev's Virtual Birthday Room ✨</title>
+  <title>🎂 Sikadev's Virtual Birthday Room & Live Celebration ✨</title>
   
   <!-- OpenGraph / WhatsApp Link Preview -->
   <meta property="og:title" content="🎂 Join Sikadev's Virtual Birthday Room! 🎉" />
-  <meta property="og:description" content="Celebrate Sikadev's birthday, blow out the 3D candles & leave your wish! ✨" />
+  <meta property="og:description" content="Celebrate Sikadev's birthday, blow out the 3D candles in live video & leave your wish! ✨" />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#8b5cf6" />
-  <meta name="description" content="Virtual Birthday Room for Sikadev. Blow out the 3D candles, explore 3D memories, and celebrate together!" />
+  <meta name="description" content="Virtual Birthday Room for Sikadev. Blow out the 3D candles, explore rotating memory cards, and celebrate live!" />
 
   <!-- Google Fonts & Tailwind CDN -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,34 +26,40 @@
 </head>
 <body class="bg-[#090a16] text-white font-['Plus_Jakarta_Sans',sans-serif] overflow-x-hidden select-none">
 
-  <!-- 3D WebGL Canvas Container (Unblocked, Pristine 3D Experience) -->
+  <!-- 3D WebGL Canvas Container (Full Universe Experience) -->
   <div id="canvas-container" class="fixed inset-0 z-0 pointer-events-auto"></div>
 
   <!-- Ambient Glow overlay -->
-  <div id="ambient-overlay" class="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/15 via-transparent to-black/75"></div>
+  <div id="ambient-overlay" class="pointer-events-none fixed inset-0 z-[1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-black/70"></div>
 
   <!-- Floating Live Reactions Container (Floats up screen) -->
   <div id="reactions-container" class="fixed inset-0 pointer-events-none z-30 overflow-hidden"></div>
 
-  <!-- TOP APP BAR (Minimal & Balanced) -->
-  <header class="fixed top-0 inset-x-0 z-20 w-full max-w-6xl mx-auto px-4 py-3 flex items-center justify-between pointer-events-auto">
+  <!-- TOP APP BAR -->
+  <header class="relative z-20 w-full max-w-6xl mx-auto px-4 pt-3 sm:pt-4 flex items-center justify-between pointer-events-auto">
     <!-- Brand / Title -->
     <div class="flex items-center space-x-2.5 cursor-pointer" id="brand-logo" title="Sikadev's Birthday Hub (Triple click for Admin)">
-      <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 p-[1.5px] shadow-lg shadow-purple-500/25 flex items-center justify-center">
-        <div class="w-full h-full bg-[#0d0f22] rounded-[10px] flex items-center justify-center text-sm sm:text-base">
+      <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-purple-500 via-pink-500 to-amber-400 p-[1.5px] shadow-lg shadow-purple-500/25 flex items-center justify-center">
+        <div class="w-full h-full bg-[#0d0f22] rounded-[13px] flex items-center justify-center text-base sm:text-lg">
           🎂
         </div>
       </div>
       <div>
-        <h1 class="text-sm sm:text-base font-black font-['Outfit'] tracking-tight bg-gradient-to-r from-purple-200 via-pink-200 to-amber-200 bg-clip-text text-transparent">
-          Sikadev's Room
-        </h1>
-        <p class="text-[10px] text-purple-300/60 font-medium hidden sm:block">Birthday Edition ✨</p>
+        <div class="flex items-center space-x-2">
+          <h1 class="text-base sm:text-lg font-black font-['Outfit'] tracking-tight bg-gradient-to-r from-purple-200 via-pink-200 to-amber-200 bg-clip-text text-transparent">
+            Sikadev's Room
+          </h1>
+          <span id="live-video-badge" class="hidden px-2 py-0.5 rounded-full bg-red-600/90 text-white text-[10px] font-black uppercase tracking-wider flex items-center space-x-1 animate-pulse">
+            <span class="w-1.5 h-1.5 rounded-full bg-white"></span>
+            <span>LIVE CAM</span>
+          </span>
+        </div>
+        <p class="text-[10px] sm:text-xs text-purple-300/70 font-medium">Virtual Birthday Celebration ✨</p>
       </div>
     </div>
 
-    <!-- Center Live Capsule -->
-    <div class="flex items-center space-x-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-[11px] shadow-sm">
+    <!-- Center Live Event Countdown Capsule -->
+    <div class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-xs shadow-sm">
       <span class="relative flex h-2 w-2">
         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
         <span class="relative inline-flex rounded-full h-2 w-2 bg-rose-500"></span>
@@ -63,20 +69,22 @@
       <span class="text-purple-200 flex items-center space-x-1">
         <span>👥</span>
         <span id="live-presence-count" class="font-bold text-emerald-400">26</span>
+        <span class="hidden md:inline text-purple-300/70">Lovelies</span>
       </span>
     </div>
 
     <!-- Right Controls -->
-    <div class="flex items-center space-x-1.5">
+    <div class="flex items-center space-x-2">
       <!-- Sound Toggle -->
-      <button id="sound-btn" class="glass-pill w-8 h-8 rounded-full flex items-center justify-center text-xs text-purple-200 hover:text-white transition-all active:scale-95" title="Toggle audio sound">
+      <button id="sound-btn" class="glass-pill px-2.5 py-1.5 rounded-full flex items-center space-x-1 text-xs text-purple-200 hover:text-white transition-all active:scale-95" title="Toggle audio sound">
         <span id="sound-icon">🎵</span>
+        <span id="sound-state" class="hidden sm:inline text-[11px] font-semibold">Off</span>
       </button>
 
       <!-- Invite WhatsApp -->
-      <button id="quick-share-btn" class="bg-emerald-600/80 hover:bg-emerald-500 border border-emerald-400/40 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center space-x-1 shadow-md shadow-emerald-900/30 transition-all active:scale-95">
+      <button id="quick-share-btn" class="bg-emerald-600/80 hover:bg-emerald-500 border border-emerald-400/40 text-white text-xs font-semibold px-3 py-1.5 rounded-full flex items-center space-x-1.5 shadow-md shadow-emerald-900/30 transition-all active:scale-95">
         <span>📲</span>
-        <span class="hidden sm:inline">Invite</span>
+        <span>Invite</span>
       </button>
 
       <!-- Admin Button -->
@@ -87,132 +95,164 @@
   </header>
 
   <!-- SUBTLE RIGHT FLOATING REACTIONS -->
-  <div class="fixed right-3.5 bottom-24 z-20 flex flex-col items-center space-y-2 pointer-events-auto opacity-75 hover:opacity-100 transition-opacity">
-    <button class="reaction-tap-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-sm sm:text-base transition-transform active:scale-125 shadow-lg" data-emoji="❤️" title="Send Love">❤️</button>
-    <button class="reaction-tap-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-sm sm:text-base transition-transform active:scale-125 shadow-lg" data-emoji="🎉" title="Send Party">🎉</button>
-    <button class="reaction-tap-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-sm sm:text-base transition-transform active:scale-125 shadow-lg" data-emoji="🎂" title="Send Cake">🎂</button>
-    <button class="reaction-tap-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-sm sm:text-base transition-transform active:scale-125 shadow-lg" data-emoji="🥂" title="Send Cheers">🥂</button>
-    <button class="reaction-tap-btn w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-sm sm:text-base transition-transform active:scale-125 shadow-lg" data-emoji="🚀" title="Send Rocket">🚀</button>
+  <div class="fixed right-3.5 bottom-24 z-20 flex flex-col items-center space-y-2 pointer-events-auto opacity-80 hover:opacity-100 transition-opacity">
+    <button class="reaction-tap-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-base sm:text-lg transition-transform active:scale-125 shadow-lg" data-emoji="❤️" title="Send Love">❤️</button>
+    <button class="reaction-tap-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-base sm:text-lg transition-transform active:scale-125 shadow-lg" data-emoji="🎉" title="Send Party">🎉</button>
+    <button class="reaction-tap-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-base sm:text-lg transition-transform active:scale-125 shadow-lg" data-emoji="🎂" title="Send Cake">🎂</button>
+    <button class="reaction-tap-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-base sm:text-lg transition-transform active:scale-125 shadow-lg" data-emoji="🥂" title="Send Cheers">🥂</button>
+    <button class="reaction-tap-btn w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-black/40 hover:bg-black/60 border border-white/15 backdrop-blur-md flex items-center justify-center text-base sm:text-lg transition-transform active:scale-125 shadow-lg" data-emoji="🚀" title="Send Rocket">🚀</button>
   </div>
 
-  <!-- HERO 3D STAGE VIEWPORT (Clean, Spacious, Uncluttered) -->
-  <main class="relative z-10 w-full max-w-4xl mx-auto px-4 pt-16 sm:pt-20 flex flex-col items-center text-center pointer-events-none min-h-[85vh] justify-between pb-24">
+  <!-- HERO 3D STAGE & INTERACTIVE CONTROLS -->
+  <main class="relative z-10 w-full max-w-6xl mx-auto px-4 pt-3 sm:pt-4 flex flex-col items-center min-h-[85vh] justify-between pb-8 pointer-events-none">
     
-    <!-- Hero Title & Subtitle -->
-    <div class="pointer-events-none space-y-1 mt-2">
+    <!-- Top Stage Header: Title & Celebration Status Pill -->
+    <div class="pointer-events-auto flex flex-col items-center text-center space-y-2 max-w-2xl mx-auto">
+      
+      <!-- Status Pill -->
+      <div id="status-pill" class="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md shadow-inner text-xs sm:text-sm text-purple-200 font-medium animate-bounce-slow">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="status-text">Blow into mic or tap the button to blow candles! 🌬️</span>
+      </div>
+
+      <!-- Hero Title -->
       <h2 class="text-3xl sm:text-5xl font-black font-['Outfit'] tracking-tight leading-tight">
         Happy Birthday, 
-        <span class="bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(236,72,153,0.3)]">
+        <span class="bg-gradient-to-r from-amber-300 via-pink-400 to-purple-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(236,72,153,0.35)]">
           Sikadev! 🎉
         </span>
       </h2>
-      <p id="status-text" class="text-xs sm:text-sm text-purple-200/75 max-w-md mx-auto">
-        Make a wish, blow out the candles & explore 3D memories ✨
+      <p class="text-xs sm:text-sm text-purple-200/80 max-w-md">
+        Look into the video card, blow out the 3D candles & explore rotating memory cards! ✨
       </p>
     </div>
 
-    <!-- Center Stage 3D Orbit Navigator (Subtle & Clean) -->
-    <div class="pointer-events-auto flex flex-col items-center space-y-2 mt-auto mb-2">
-      <div id="card-orbit-controls" class="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-black/40 border border-white/10 backdrop-blur-md shadow-lg text-xs">
-        <button id="prev-card-btn" class="text-purple-300 hover:text-white px-2 py-0.5 rounded-lg hover:bg-white/5 transition-all">◀</button>
-        <div id="active-card-pill" class="cursor-pointer hover:text-amber-300 flex items-center space-x-1 px-2 font-medium truncate max-w-[200px]" title="Click to view story">
-          <span id="active-card-icon">📸</span>
-          <span id="active-card-title" class="truncate">Midnight Coding 💻</span>
+    <!-- DESKTOP / MOBILE STAGE ROW (Cake in center, Video Card Box docked neatly on the side) -->
+    <div class="w-full flex flex-col lg:flex-row items-center justify-between my-auto pointer-events-none relative py-2">
+      
+      <!-- Left spacer for desktop balance -->
+      <div class="hidden lg:block w-64 pointer-events-none"></div>
+
+      <!-- Center Cake & Orbiting Mirrors focal area is open in 3D WebGL! -->
+      <div class="pointer-events-none flex-1"></div>
+
+      <!-- THE MINIMAL LIVE VIDEO CARD BOX FOR BLOWING (Visible, Sleek, Interactive!) -->
+      <div id="video-card-box" class="pointer-events-auto w-full max-w-[240px] sm:max-w-[260px] mx-auto lg:mx-0 lg:ml-auto aspect-[3/4] rounded-3xl bg-[#0c0e22]/90 border border-purple-500/40 p-2.5 shadow-2xl shadow-purple-950/60 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden hover:border-pink-500/60 my-2 lg:my-0">
+        
+        <!-- Video Card Top Bar -->
+        <div class="flex items-center justify-between px-1.5 pt-0.5 text-xs z-10">
+          <div class="flex items-center space-x-1.5">
+            <span id="cam-active-dot" class="w-2 h-2 rounded-full bg-gray-500"></span>
+            <span id="video-card-status" class="text-[10px] font-bold uppercase tracking-wider text-purple-200">Video Cam</span>
+          </div>
+          <button id="toggle-card-cam-btn" class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-purple-600/30 hover:bg-purple-600/50 text-white transition-all border border-purple-400/40 active:scale-95 flex items-center space-x-1">
+            <span id="cam-btn-icon">📹</span>
+            <span id="cam-btn-label">Start Cam</span>
+          </button>
         </div>
-        <button id="next-card-btn" class="text-purple-300 hover:text-white px-2 py-0.5 rounded-lg hover:bg-white/5 transition-all">▶</button>
+
+        <!-- Video Screen Viewport -->
+        <div class="relative flex-1 w-full rounded-2xl overflow-hidden bg-black/60 my-2 flex items-center justify-center border border-white/10 shadow-inner group cursor-pointer">
+          <!-- Active Selfie Video -->
+          <video id="webcam-video" autoplay playsinline muted class="hidden w-full h-full object-cover transform -scale-x-100"></video>
+          
+          <!-- Placeholder when camera is off -->
+          <div id="webcam-placeholder" class="flex flex-col items-center justify-center p-3 text-center space-y-1.5">
+            <div class="w-10 h-10 rounded-2xl bg-purple-600/30 border border-purple-400/40 flex items-center justify-center text-xl shadow-lg shadow-purple-900/40 group-hover:scale-110 transition-transform">
+              📹
+            </div>
+            <span class="text-xs font-bold text-white">Live Blow Cam</span>
+            <p class="text-[10px] text-purple-300/70 max-w-[160px] leading-tight">Tap to turn on your camera and blow candles live!</p>
+          </div>
+
+          <!-- Integrated Blow Wind Meter Overlay (at bottom of video card) -->
+          <div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/95 via-black/60 to-transparent flex flex-col items-center z-10">
+            <div class="w-full flex items-center justify-between text-[10px] text-purple-200 mb-0.5 font-semibold">
+              <span class="flex items-center space-x-1">
+                <span>💨</span>
+                <span id="card-blow-label">Blow into Mic</span>
+              </span>
+              <span id="card-wind-pct" class="font-bold text-amber-300">0%</span>
+            </div>
+            <div class="w-full h-2 bg-white/10 rounded-full overflow-hidden p-[1px]">
+              <div id="card-wind-bar" class="h-full bg-gradient-to-r from-cyan-400 via-pink-400 to-amber-400 rounded-full w-0 transition-all duration-75"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Video Card Bottom Action Bar -->
+        <div class="flex items-center justify-between px-1 z-10 text-[10px]">
+          <button id="snap-photo-btn" class="px-2.5 py-1 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold border border-amber-400/30 flex items-center space-x-1 transition-all active:scale-95" title="Take a celebration snapshot">
+            <span>📸</span>
+            <span>Snap Photo</span>
+          </button>
+
+          <button id="card-quick-blow-btn" class="px-2.5 py-1 rounded-xl bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 font-bold border border-pink-500/30 flex items-center space-x-1 transition-all active:scale-95">
+            <span>💨</span>
+            <span>Tap to Blow</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOWER HERO CONTROLS & 3D ROTATION NAVIGATOR (Uncluttered, Balanced & Accessible) -->
+    <div class="pointer-events-auto flex flex-col items-center space-y-3 w-full max-w-xl mx-auto mt-2">
+      
+      <!-- Primary Action Buttons Row -->
+      <div class="flex flex-wrap items-center justify-center gap-2 w-full">
+        
+        <!-- Blow Button -->
+        <button id="mic-trigger-btn" class="py-2.5 px-4 rounded-2xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-extrabold text-xs sm:text-sm shadow-lg shadow-purple-600/30 flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95">
+          <span id="mic-btn-icon">💨</span>
+          <span id="mic-btn-text">Blow Out Candles</span>
+        </button>
+
+        <!-- Relight Button (Swaps with Blow button when blown) -->
+        <button id="relight-btn" class="hidden py-2.5 px-4 rounded-2xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/30 flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95">
+          <span>🔥</span>
+          <span>Relight Candles</span>
+        </button>
+
+        <!-- Wish Button -->
+        <button id="open-wish-modal-btn" class="py-2.5 px-4 rounded-2xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black font-extrabold text-xs sm:text-sm shadow-lg shadow-amber-500/25 flex items-center justify-center space-x-1.5 transition-all transform hover:-translate-y-0.5 active:scale-95">
+          <span>✨</span>
+          <span>Pin Birthday Wish</span>
+        </button>
+
+        <!-- 3D Memories Button -->
+        <button id="view-memories-btn" class="py-2.5 px-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-purple-200 hover:text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all active:scale-95">
+          <span>📸</span>
+          <span>3D Memories</span>
+        </button>
+
+        <!-- Wishes Wall Button -->
+        <button id="view-wishes-btn" class="py-2.5 px-3.5 rounded-2xl bg-white/10 hover:bg-white/15 border border-white/15 text-purple-200 hover:text-white font-semibold text-xs sm:text-sm flex items-center justify-center space-x-1.5 transition-all active:scale-95">
+          <span>💌</span>
+          <span>Wishes</span>
+          <span id="wish-count-badge" class="font-bold text-amber-300 ml-1 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-[10px]">5</span>
+        </button>
       </div>
 
-      <!-- Quick Scroll Indicator -->
-      <div id="scroll-prompt-btn" class="cursor-pointer text-[10px] text-purple-300/50 hover:text-purple-200 flex items-center space-x-1 transition-colors">
-        <span>↓ Scroll for Memories & Wishes Wall</span>
+      <!-- 3D Rotating Mirrors / Cards Orbit Carousel Control -->
+      <div id="card-orbit-controls" class="flex items-center space-x-3 px-4 py-2 rounded-full bg-black/50 border border-white/15 backdrop-blur-xl shadow-xl text-xs">
+        <button id="prev-card-btn" class="text-purple-300 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition-all font-bold">◀</button>
+        <div id="active-card-pill" class="cursor-pointer hover:text-amber-300 flex items-center space-x-1.5 font-medium truncate max-w-[240px]" title="Click to view story">
+          <span id="active-card-icon">📸</span>
+          <span id="active-card-title" class="truncate font-semibold">Midnight Coding 💻 (1/3)</span>
+        </div>
+        <button id="next-card-btn" class="text-purple-300 hover:text-white px-2 py-1 rounded-lg hover:bg-white/10 transition-all font-bold">▶</button>
+      </div>
+
+      <!-- Subtle Prompt to Scroll for Wall -->
+      <div id="scroll-prompt-btn" class="cursor-pointer text-xs text-purple-300/60 hover:text-purple-200 flex items-center space-x-1.5 transition-colors pt-1">
+        <span>↓ Scroll for All Memories & Wishes Wall</span>
       </div>
     </div>
   </main>
 
-  <!-- FLOATING MINIMAL VIDEO CARD BOX (Docked on Top/Bottom Corner - Collapsible) -->
-  <div id="video-card-box" class="fixed top-16 right-4 sm:right-8 z-30 pointer-events-auto hidden w-48 sm:w-56 aspect-[3/4] rounded-2xl bg-[#0c0e22]/95 border border-purple-500/40 p-2 shadow-2xl backdrop-blur-xl transition-all duration-300 flex flex-col justify-between overflow-hidden">
-    
-    <!-- Video Box Header -->
-    <div class="flex items-center justify-between px-1.5 pt-0.5 text-[10px]">
-      <div class="flex items-center space-x-1">
-        <span id="cam-active-dot" class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="video-card-status" class="font-bold uppercase tracking-wider text-rose-300">Live Cam</span>
-      </div>
-      <button id="close-card-cam-btn" class="text-gray-400 hover:text-white text-xs px-1">✕</button>
-    </div>
-
-    <!-- Webcam Stream Viewport -->
-    <div class="relative flex-1 w-full rounded-xl overflow-hidden bg-black/70 my-1.5 flex items-center justify-center border border-white/10">
-      <video id="webcam-video" autoplay playsinline muted class="w-full h-full object-cover transform -scale-x-100"></video>
-      
-      <!-- Wind Level Overlay Bar -->
-      <div class="absolute inset-x-0 bottom-0 p-2 bg-gradient-to-t from-black/90 to-transparent flex flex-col items-center">
-        <div class="w-full flex items-center justify-between text-[9px] text-purple-200 mb-0.5 font-semibold">
-          <span>💨 Blow</span>
-          <span id="card-wind-pct" class="text-amber-300 font-bold">0%</span>
-        </div>
-        <div class="w-full h-1.5 bg-white/15 rounded-full overflow-hidden">
-          <div id="card-wind-bar" class="h-full bg-gradient-to-r from-cyan-400 via-pink-400 to-amber-400 rounded-full w-0 transition-all duration-75"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Video Box Bottom Actions -->
-    <div class="flex items-center justify-between px-0.5 text-[10px]">
-      <button id="snap-photo-btn" class="px-2 py-0.5 rounded-md bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold border border-amber-400/30">
-        📸 Snap
-      </button>
-      <button id="card-quick-blow-btn" class="px-2 py-0.5 rounded-md bg-pink-500/20 hover:bg-pink-500/30 text-pink-300 font-bold border border-pink-500/30">
-        💨 Blow
-      </button>
-    </div>
-  </div>
-
-  <!-- UNIFIED FLOATING CONTROL DOCK (Apple / Dynamic Island Style) -->
-  <div class="fixed bottom-7 inset-x-0 z-30 flex items-center justify-center pointer-events-none px-4">
-    <div class="pointer-events-auto flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 rounded-2xl bg-black/70 border border-white/15 backdrop-blur-2xl shadow-2xl shadow-purple-950/50">
-      
-      <!-- Live Video Cam Toggle -->
-      <button id="toggle-card-cam-btn" class="px-3 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-200 hover:text-white font-bold text-xs flex items-center space-x-1.5 transition-all active:scale-95">
-        <span id="cam-btn-icon">📹</span>
-        <span id="cam-btn-label">Live Cam</span>
-      </button>
-
-      <!-- Blow Candles / Mic Trigger -->
-      <button id="mic-trigger-btn" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-md shadow-purple-600/30 flex items-center space-x-1.5 transition-all active:scale-95">
-        <span id="mic-btn-icon">💨</span>
-        <span id="mic-btn-text">Blow</span>
-      </button>
-
-      <!-- Relight Button (Hidden initially) -->
-      <button id="relight-btn" class="hidden px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs flex items-center space-x-1.5 transition-all active:scale-95">
-        <span>🔥</span>
-        <span>Relight</span>
-      </button>
-
-      <!-- Leave Wish Button -->
-      <button id="open-wish-modal-btn" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black font-extrabold text-xs shadow-md flex items-center space-x-1.5 transition-all active:scale-95">
-        <span>✨</span>
-        <span>Wish</span>
-      </button>
-
-      <!-- View Memories -->
-      <button id="view-memories-btn" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-purple-200 hover:text-white font-semibold text-xs flex items-center space-x-1.5 transition-all active:scale-95">
-        <span>📸</span>
-        <span class="hidden sm:inline">Memories</span>
-      </button>
-
-      <!-- View Wishes Drawer -->
-      <button id="view-wishes-btn" class="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-purple-200 hover:text-white font-semibold text-xs flex items-center space-x-1 transition-all active:scale-95">
-        <span>💌</span>
-        <span id="wish-count-badge" class="font-bold text-amber-300">5</span>
-      </button>
-    </div>
-  </div>
-
-  <!-- LIVE WISH TICKER BAR (Slim at bottom) -->
-  <div id="live-wish-ticker" class="fixed bottom-0 inset-x-0 z-20 bg-[#070812]/90 backdrop-blur-md border-t border-purple-500/15 py-1 px-4 overflow-hidden flex items-center text-[11px]">
-    <div class="flex items-center space-x-1.5 shrink-0 pr-2 border-r border-white/10 text-[10px] font-bold text-amber-300">
+  <!-- LIVE WISH TICKER BAR (Slim at bottom edge) -->
+  <div id="live-wish-ticker" class="fixed bottom-0 inset-x-0 z-20 bg-[#070812]/90 backdrop-blur-md border-t border-purple-500/15 py-1.5 px-4 overflow-hidden flex items-center text-xs">
+    <div class="flex items-center space-x-1.5 shrink-0 pr-3 border-r border-white/10 text-xs font-bold text-amber-300">
       <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
       <span>WISHES</span>
     </div>
@@ -221,17 +261,17 @@
     </div>
   </div>
 
-  <!-- SCROLLABLE CARDS SHOWCASE SECTION (Clean & Spacious) -->
+  <!-- SCROLLABLE SHOWCASE SECTION (Memories & Wishes Wall) -->
   <section id="cards-showcase-section" class="relative z-10 w-full max-w-5xl mx-auto px-4 pt-16 pb-28 pointer-events-auto">
     <div class="text-center mb-10">
-      <span class="px-3 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 text-xs font-bold uppercase tracking-widest">
+      <span class="px-3.5 py-1 rounded-full bg-purple-500/20 text-purple-300 border border-purple-400/30 text-xs font-bold uppercase tracking-widest">
         Moments & Milestones
       </span>
       <h3 class="text-3xl sm:text-4xl font-black font-['Outfit'] text-white mt-2">
         Sikadev's Memory & Wish Cards
       </h3>
       <p class="text-xs sm:text-sm text-purple-200/70 max-w-md mx-auto mt-1">
-        Scroll through cards. Tap any card to rotate the 3D Universe and view it up close!
+        Scroll and inspect every moment. Tap any card to rotate the 3D Universe and view it up close!
       </p>
     </div>
 
@@ -254,7 +294,7 @@
           <span>💌</span>
           <span>The Lovelies' Wishes Wall</span>
         </h4>
-        <button id="section-add-wish-btn" class="text-xs font-bold text-amber-300 hover:text-white px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 transition-all">
+        <button id="section-add-wish-btn" class="text-xs font-bold text-amber-300 hover:text-white px-3.5 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 transition-all">
           + Add Your Wish
         </button>
       </div>
@@ -274,12 +314,12 @@
         <canvas id="snapshot-canvas" class="max-w-full rounded-xl shadow-lg"></canvas>
       </div>
 
-      <div class="flex gap-2.5 mt-4">
-        <button id="download-snapshot-btn" class="flex-1 py-2.5 px-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all">
+      <div class="flex flex-col sm:flex-row gap-2.5 mt-5">
+        <button id="download-snapshot-btn" class="flex-1 py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all active:scale-95">
           <span>💾</span>
-          <span>Save Photo</span>
+          <span>Save to Device</span>
         </button>
-        <button id="share-snapshot-whatsapp-btn" class="flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all">
+        <button id="share-snapshot-whatsapp-btn" class="flex-1 py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center space-x-1.5 transition-all active:scale-95">
           <span>📲</span>
           <span>Share on WhatsApp</span>
         </button>
@@ -287,57 +327,39 @@
     </div>
   </div>
 
-  <!-- LIVE CELEBRATION FULLSCREEN OVERLAY -->
-  <div id="live-event-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-black/85 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-500 text-center">
-    <div class="relative max-w-lg w-full p-8 rounded-3xl bg-gradient-to-b from-purple-950/90 to-[#0e1026] border-2 border-amber-400/80 shadow-[0_0_80px_rgba(245,158,11,0.4)]">
-      <div class="text-5xl sm:text-6xl mb-3 animate-bounce">🎂🎉🚀</div>
-      <div class="inline-block px-4 py-1 rounded-full bg-rose-500 text-white font-black text-xs tracking-widest uppercase mb-3 animate-pulse">
-        LIVE CELEBRATION MOMENT
-      </div>
-      <h2 class="text-3xl sm:text-5xl font-black font-['Outfit'] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-purple-300">
-        IT'S SIKADEV'S TIME!
-      </h2>
-      <p class="text-sm text-purple-200 mt-2">
-        All connected Lovelies are celebrating right now! Get ready to blow out the candles together!
-      </p>
-
-      <div id="live-sync-countdown" class="my-6 text-7xl sm:text-8xl font-black font-['Outfit'] text-amber-300 drop-shadow-[0_0_30px_rgba(245,158,11,0.8)]">
-        10
-      </div>
-
-      <button id="dismiss-live-overlay-btn" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-500 text-black font-black text-sm shadow-xl hover:brightness-110 active:scale-95 transition-all">
-        JOIN THE CELEBRATION! 🎊
-      </button>
-    </div>
-  </div>
-
   <!-- 3D MEDIA INSPECTION MODAL -->
   <div id="media-inspect-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg opacity-0 pointer-events-none transition-all duration-300">
     <div class="relative w-full max-w-xl bg-[#0e1026] border border-indigo-400/40 rounded-3xl p-6 shadow-2xl text-left transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
       <button id="close-media-inspect-btn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
-      
-      <div class="flex items-center space-x-2 mb-3">
-        <span class="text-xs px-2.5 py-1 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 font-bold" id="inspect-media-tag">📸 Memory</span>
-        <span class="text-xs text-gray-400" id="inspect-media-date">2026</span>
+
+      <div id="inspect-media-display" class="w-full rounded-2xl overflow-hidden bg-black/60 border border-white/10 mb-4 flex items-center justify-center max-h-[380px]">
+        <!-- Video or Image dynamically inserted -->
       </div>
 
-      <div id="inspect-media-display" class="w-full rounded-2xl overflow-hidden bg-black/60 border border-white/10 flex items-center justify-center min-h-[220px] max-h-[420px]"></div>
+      <div class="flex items-center justify-between mb-2">
+        <span id="inspect-media-badge" class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-purple-500/20 text-purple-300 border border-purple-400/30">PHOTO</span>
+        <div class="flex items-center space-x-3 text-xs text-purple-300/70">
+          <span id="inspect-media-date">2026 Milestone</span>
+          <button id="like-memory-btn" class="text-rose-400 hover:scale-110 active:scale-95 transition-transform flex items-center space-x-1">
+            <span>❤️</span>
+            <span id="inspect-likes-count" class="font-bold">48</span>
+          </button>
+        </div>
+      </div>
 
-      <h4 class="text-lg font-bold font-['Outfit'] text-white mt-4" id="inspect-media-title">Memory Title</h4>
-      <p class="text-sm text-purple-200/90 mt-1 leading-relaxed" id="inspect-media-caption">Memory story...</p>
+      <h3 id="inspect-media-title" class="text-xl font-black font-['Outfit'] text-white">Title</h3>
+      <p id="inspect-media-caption" class="text-xs sm:text-sm text-purple-200/80 mt-2 leading-relaxed">Caption</p>
 
-      <div class="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-        <button id="like-memory-btn" class="px-3.5 py-1.5 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-300 hover:bg-rose-500/30 text-xs font-bold flex items-center space-x-1.5 transition-all">
-          <span>❤️</span>
-          <span id="memory-likes-count">42 Loves</span>
+      <div class="mt-5 pt-3 border-t border-white/10 flex justify-end">
+        <button id="inspect-view-3d-btn" class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs flex items-center space-x-1.5 shadow-lg active:scale-95">
+          <span>🪐 Orbit to Card in 3D</span>
         </button>
-        <span class="text-[11px] text-gray-400">From Sikadev's 3D Vault</span>
       </div>
     </div>
   </div>
 
-  <!-- ADMIN STUDIO MODAL -->
-  <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300">
+  <!-- SIKADEV ADMIN STUDIO MODAL -->
+  <div id="admin-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-lg opacity-0 pointer-events-none transition-all duration-300">
     <div class="relative w-full max-w-2xl bg-[#0c0e24] border border-amber-400/40 rounded-3xl p-6 shadow-2xl text-left transform scale-95 transition-all duration-300 max-h-[90vh] overflow-y-auto">
       <button id="close-admin-modal-btn" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-white/5 rounded-full w-8 h-8 flex items-center justify-center">✕</button>
 
@@ -350,10 +372,11 @@
         </p>
         <div class="max-w-xs mx-auto">
           <input type="password" id="admin-pin-input" maxlength="8" placeholder="Enter PIN (Default: 2026)" class="w-full text-center tracking-widest text-xl bg-white/5 border border-amber-400/40 focus:border-amber-400 rounded-xl px-4 py-3 text-white placeholder-gray-500 outline-none" />
-          <button id="admin-login-btn" class="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-black font-black text-sm shadow-lg hover:brightness-110 active:scale-95 transition-all">
-            Unlock Studio ✨
-          </button>
+          <p id="admin-pin-error" class="hidden text-xs text-rose-400 mt-2">Incorrect PIN. Try default '2026'.</p>
         </div>
+        <button id="admin-login-btn" class="w-full max-w-xs mx-auto py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-extrabold text-sm shadow-lg shadow-amber-500/30 transition-all active:scale-95">
+          Enter Studio 🚀
+        </button>
         <p class="text-[10px] text-gray-500">Default passcode is 2026</p>
       </div>
 
@@ -361,110 +384,98 @@
       <div id="admin-dashboard-screen" class="hidden space-y-5">
         <div class="flex items-center justify-between pb-3 border-b border-white/10">
           <div>
-            <h3 class="text-xl font-black font-['Outfit'] text-amber-300">Creator Studio & Event Control</h3>
-            <p class="text-xs text-purple-300/80">Manage your 3D memories & live birthday event</p>
+            <h3 class="text-xl font-black font-['Outfit'] text-white flex items-center space-x-2">
+              <span>⚙️ Sikadev's Admin Studio</span>
+            </h3>
+            <p class="text-xs text-purple-300/70">Curate 3D memories & configure live event</p>
           </div>
-          <button id="admin-logout-btn" class="text-xs text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20">
-            Lock 🔒
-          </button>
+          <button id="admin-logout-btn" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">Lock 🔒</button>
         </div>
 
-        <!-- Admin Tabs -->
+        <!-- Navigation Tabs -->
         <div class="flex space-x-2 border-b border-white/10 pb-2">
-          <button id="tab-media-btn" class="admin-tab active px-3.5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-400/40 text-amber-300 text-xs font-bold">
-            📸 3D Media Gallery
-          </button>
-          <button id="tab-event-btn" class="admin-tab px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-xs font-bold">
-            ⏰ Live Event Countdown
-          </button>
-          <button id="tab-settings-btn" class="admin-tab px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-300 text-xs font-bold">
-            ⚙️ Settings
-          </button>
+          <button id="tab-media-btn" class="admin-tab-btn active px-3.5 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-400/40 text-xs font-bold transition-all">📸 3D Media</button>
+          <button id="tab-event-btn" class="admin-tab-btn px-3.5 py-1.5 rounded-xl bg-white/5 text-gray-400 border border-transparent text-xs font-bold transition-all">⏰ Live Event</button>
+          <button id="tab-settings-btn" class="admin-tab-btn px-3.5 py-1.5 rounded-xl bg-white/5 text-gray-400 border border-transparent text-xs font-bold transition-all">⚙️ Settings</button>
         </div>
 
-        <!-- TAB 1: MEDIA GALLERY -->
+        <!-- TAB 1: 3D MEDIA MANAGEMENT -->
         <div id="admin-tab-media" class="space-y-4">
-          <form id="add-media-form" class="space-y-3 p-4 rounded-2xl bg-white/5 border border-white/10">
-            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Add New 3D Memory (Image or Video)</h4>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">+ Add New 3D Photo / Video</h4>
+            <form id="add-media-form" class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-300 mb-1">TYPE</label>
+                  <select id="media-type-input" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400">
+                    <option value="image">📸 Image (JPG, PNG, WebP)</option>
+                    <option value="video">🎥 Video (MP4)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-gray-300 mb-1">TITLE</label>
+                  <input type="text" id="media-title-input" required placeholder="e.g. Milestone 2026 🚀" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+                </div>
+              </div>
+
               <div>
-                <label class="block text-[11px] font-semibold text-purple-200 mb-1">Title / Milestone</label>
-                <input type="text" id="media-title-input" required placeholder="e.g. My Favorite Dev Project, Trip to the Beach" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">MEDIA URL OR LOCAL FILE</label>
+                <div class="space-y-2">
+                  <input type="url" id="media-url-input" placeholder="https://example.com/photo.jpg or video.mp4" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+                  <div class="flex items-center space-x-2">
+                    <span class="text-[10px] text-gray-400">Or choose file:</span>
+                    <input type="file" id="media-file-input" accept="image/*,video/mp4" class="text-xs text-gray-400 file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-purple-600/30 file:text-purple-200 hover:file:bg-purple-600/50 cursor-pointer" />
+                  </div>
+                </div>
               </div>
+
               <div>
-                <label class="block text-[11px] font-semibold text-purple-200 mb-1">Media Type</label>
-                <select id="media-type-input" class="w-full bg-[#12142f] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400">
-                  <option value="image">Image (Photo)</option>
-                  <option value="video">Video (MP4 / WebM)</option>
-                </select>
+                <label class="block text-[11px] font-bold text-gray-300 mb-1">CAPTION / STORY</label>
+                <textarea id="media-caption-input" rows="2" placeholder="Tell the story behind this moment..." class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400 resize-none"></textarea>
               </div>
-            </div>
 
-            <div>
-              <label class="block text-[11px] font-semibold text-purple-200 mb-1">Image/Video URL or Upload File</label>
-              <div class="flex gap-2">
-                <input type="url" id="media-url-input" placeholder="https://images.unsplash.com/... or paste video URL" class="flex-1 bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
-                <label class="cursor-pointer px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold flex items-center space-x-1 shrink-0">
-                  <span>📁 Upload</span>
-                  <input type="file" id="media-file-input" accept="image/*,video/*" class="hidden" />
-                </label>
-              </div>
-            </div>
+              <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-black font-bold text-xs shadow-md transition-all">
+                Add to 3D Orbit Universe ✨
+              </button>
+            </form>
+          </div>
 
-            <div>
-              <label class="block text-[11px] font-semibold text-purple-200 mb-1">Story / Caption for your Lovelies</label>
-              <textarea id="media-caption-input" rows="2" placeholder="Tell the story or memory behind this moment..." class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400 resize-none"></textarea>
-            </div>
-
-            <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-amber-500 hover:from-purple-500 hover:to-amber-400 text-black font-extrabold text-xs shadow-md transition-all">
-              + Add to 3D Orbit Sky 🌟
-            </button>
-          </form>
-
+          <!-- Existing Media List -->
           <div>
-            <h4 class="text-xs font-bold text-purple-200 mb-2">Active 3D Media Items (<span id="admin-media-count">0</span>)</h4>
-            <div id="admin-media-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
+            <h4 class="text-xs font-bold text-purple-200 mb-2 uppercase tracking-wider">Current 3D Cards</h4>
+            <div id="admin-media-list" class="space-y-2 max-h-56 overflow-y-auto pr-1"></div>
           </div>
         </div>
 
-        <!-- TAB 2: LIVE EVENT COUNTDOWN -->
+        <!-- TAB 2: LIVE EVENT SCHEDULER -->
         <div id="admin-tab-event" class="hidden space-y-4">
           <div class="p-4 rounded-2xl bg-white/5 border border-white/10 space-y-3">
-            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Schedule Celebration Hour</h4>
-            <p class="text-xs text-purple-200/80">
-              Set the exact date & time when the countdown reaches zero. When the moment arrives, everyone on the site gets the synchronized celebration!
+            <h4 class="text-xs font-bold text-amber-300 uppercase tracking-wider">Set Live Celebration Date & Time</h4>
+            <p class="text-xs text-purple-300/80">
+              When the countdown hits zero, all lovelies in the room will trigger celebratory fireworks, fanfare, and live confetti!
             </p>
-
             <div>
-              <label class="block text-[11px] font-semibold text-purple-200 mb-1">Target Celebration Date & Time</label>
-              <input type="datetime-local" id="event-datetime-input" class="w-full bg-[#12142f] border border-white/15 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" />
+              <input type="datetime-local" id="event-datetime-input" class="w-full bg-black/40 border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-amber-400" />
             </div>
 
             <div class="flex flex-wrap gap-2 pt-1">
-              <button type="button" id="set-midnight-btn" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-amber-200">
-                🌙 Set to Midnight Tonight (00:00)
-              </button>
-              <button type="button" id="set-1hour-btn" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-amber-200">
-                ⚡ In 1 Hour
-              </button>
-              <button type="button" id="set-tomorrow-noon-btn" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs text-amber-200">
-                ☀️ Tomorrow 12:00 PM
-              </button>
+              <button type="button" id="set-midnight-btn" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs text-purple-200">Tonight Midnight</button>
+              <button type="button" id="set-1hour-btn" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs text-purple-200">In 1 Hour</button>
+              <button type="button" id="set-tomorrow-noon-btn" class="px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs text-purple-200">Tomorrow Noon</button>
             </div>
 
-            <button type="button" id="save-event-time-btn" class="w-full py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs shadow-md transition-all">
-              Save Event Schedule ⏰
+            <button type="button" id="save-event-time-btn" class="w-full py-2.5 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs shadow-md transition-all">
+              Save Countdown Target ⏰
             </button>
           </div>
 
-          <div class="p-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 space-y-2">
-            <h4 class="text-xs font-bold text-rose-300 uppercase tracking-wider">🚀 Live Celebration Trigger (Test / Override)</h4>
-            <p class="text-xs text-purple-200/80">
-              Want to start the live party right now? Tapping this launches the 10-second synchronized countdown and celebration immediately!
-            </p>
-            <button type="button" id="force-live-now-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-white font-black text-xs shadow-lg active:scale-95 transition-all">
-              🚨 Trigger Live Celebration Now!
+          <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-400/30 flex items-center justify-between">
+            <div>
+              <h5 class="text-xs font-bold text-rose-300">Force Live Celebration Now</h5>
+              <p class="text-[11px] text-rose-200/70">Test the synchronized live blowout effect immediately</p>
+            </div>
+            <button type="button" id="force-live-now-btn" class="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-lg transition-all active:scale-95">
+              Trigger Now! 🚨
             </button>
           </div>
         </div>
@@ -530,7 +541,7 @@
         <div class="flex flex-col sm:flex-row gap-2.5 pt-2">
           <button type="button" id="submit-whatsapp-btn" class="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-700/40 flex items-center justify-center space-x-2 transition-all active:scale-95">
             <span>📲</span>
-            <span>Send directly on WhatsApp</span>
+            <span>Send on WhatsApp</span>
           </button>
           <button type="submit" class="py-3 px-4 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-sm shadow-lg shadow-purple-600/30 flex items-center justify-center space-x-2 transition-all active:scale-95">
             <span>🌟</span>
@@ -557,7 +568,7 @@
   </div>
 
   <!-- SINGLE WISH INSPECT POPUP -->
-  <div id="star-inspect-card" class="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[90%] bg-[#12142f]/95 border border-purple-400/40 rounded-2xl p-4 shadow-2xl backdrop-blur-lg transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none">
+  <div id="star-inspect-card" class="fixed bottom-12 left-1/2 -translate-x-1/2 z-40 max-w-sm w-[90%] bg-[#12142f]/95 border border-purple-400/40 rounded-2xl p-4 shadow-2xl backdrop-blur-lg transform translate-y-32 opacity-0 transition-all duration-300 pointer-events-none">
     <div class="flex items-start justify-between">
       <div class="flex items-center space-x-2">
         <span id="inspect-vibe" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/30 text-purple-200 border border-purple-400/30 font-semibold">👑 The GOAT</span>
@@ -569,6 +580,31 @@
     </p>
     <div class="mt-2 text-right">
       <span class="text-xs text-amber-300 font-bold">— From <span id="inspect-sender">Sarah</span></span>
+    </div>
+  </div>
+
+  <!-- LIVE CELEBRATION FULLSCREEN OVERLAY (When timer triggers or admin starts) -->
+  <div id="live-event-overlay" class="fixed inset-0 z-50 flex flex-col items-center justify-center p-6 bg-black/85 backdrop-blur-xl opacity-0 pointer-events-none transition-all duration-500 text-center">
+    <div class="relative max-w-lg w-full p-8 rounded-3xl bg-gradient-to-b from-purple-950/90 to-[#0e1026] border-2 border-amber-400/80 shadow-[0_0_80px_rgba(245,158,11,0.4)]">
+      <div class="text-5xl sm:text-6xl mb-3 animate-bounce">🎂🎉🚀</div>
+      <div class="inline-block px-4 py-1 rounded-full bg-rose-500 text-white font-black text-xs tracking-widest uppercase mb-3 animate-pulse">
+        LIVE CELEBRATION MOMENT
+      </div>
+      <h2 class="text-3xl sm:text-5xl font-black font-['Outfit'] text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-pink-400 to-purple-300">
+        IT'S SIKADEV'S TIME!
+      </h2>
+      <p class="text-sm text-purple-200 mt-2">
+        All connected Lovelies are celebrating right now! Get ready to blow out the candles together!
+      </p>
+
+      <!-- Big Synchronized Countdown Number -->
+      <div id="live-sync-countdown" class="my-6 text-7xl sm:text-8xl font-black font-['Outfit'] text-amber-300 drop-shadow-[0_0_30px_rgba(245,158,11,0.8)]">
+        10
+      </div>
+
+      <button id="dismiss-live-overlay-btn" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-pink-500 text-black font-black text-sm shadow-xl hover:brightness-110 active:scale-95 transition-all">
+        JOIN THE CELEBRATION! 🎊
+      </button>
     </div>
   </div>
 

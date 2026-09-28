@@ -766,7 +766,7 @@ document.getElementById("active-card-pill").addEventListener("click", () => {
 
 // Wheel scroll to rotate
 window.addEventListener('wheel', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal')) return;
 
   if (window.scrollY < 250) {
     targetRotationY += e.deltaY * 0.0035;
@@ -799,19 +799,29 @@ window.addEventListener('scroll', () => {
   }
 }, { passive: true });
 
-document.getElementById("scroll-prompt-btn").addEventListener("click", () => {
-  document.getElementById("cards-showcase-section").scrollIntoView({ behavior: "smooth" });
-});
+const scrollPromptBtn = document.getElementById("scroll-prompt-btn");
+if (scrollPromptBtn) {
+  scrollPromptBtn.addEventListener("click", () => {
+    const showcase = document.getElementById("cards-showcase-section") || document.getElementById("milestones-modal");
+    if (showcase) {
+      if (showcase.classList.contains("fixed")) {
+        showcase.classList.add("active");
+      } else {
+        showcase.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+  });
+}
 
 // Drag to rotate
 window.addEventListener('mousedown', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
   isDragging = true;
   previousMousePosition = { x: e.clientX, y: e.clientY };
 });
 
 window.addEventListener('touchstart', (e) => {
-  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
+  if (e.target.closest('#wish-modal') || e.target.closest('#wishes-drawer') || e.target.closest('#admin-modal') || e.target.closest('#media-inspect-modal') || e.target.closest('#snapshot-modal') || e.target.closest('#milestones-modal') || e.target.closest('header') || e.target.closest('button') || e.target.closest('input') || e.target.closest('a') || e.target.closest('#video-card-box') || e.target.closest('.fixed.bottom-7')) return;
   if (e.touches.length === 1) {
     isDragging = true;
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -937,11 +947,14 @@ function renderShowcaseSection() {
 
     card.querySelector(".view-in-3d-btn").addEventListener("click", (e) => {
       e.stopPropagation();
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const mModal = document.getElementById("milestones-modal");
+      if (mModal) mModal.classList.remove("active");
       rotateToCard(index);
     });
 
     card.addEventListener("click", () => {
+      const mModal = document.getElementById("milestones-modal");
+      if (mModal) mModal.classList.remove("active");
       showMediaInspect(item);
     });
 
@@ -1439,13 +1452,29 @@ likeMemoryBtn.addEventListener("click", () => {
   renderShowcaseSection();
 });
 
-document.getElementById("view-memories-btn").addEventListener("click", () => {
-  if (mediaItems.length > 0) {
-    showMediaInspect(mediaItems[activeCardIndex] || mediaItems[0]);
-  } else {
-    alert("No 3D media added yet! Tap Admin to add photos.");
-  }
-});
+const milestonesModal = document.getElementById("milestones-modal");
+const closeMilestonesModal = document.getElementById("close-milestones-modal");
+
+if (closeMilestonesModal && milestonesModal) {
+  closeMilestonesModal.addEventListener("click", () => {
+    milestonesModal.classList.remove("active");
+  });
+}
+
+const viewMemoriesBtn = document.getElementById("view-memories-btn");
+if (viewMemoriesBtn) {
+  viewMemoriesBtn.addEventListener("click", () => {
+    renderShowcaseSection();
+    if (milestonesModal) {
+      milestonesModal.classList.add("active");
+      playBellTone(640);
+    } else if (mediaItems.length > 0) {
+      showMediaInspect(mediaItems[activeCardIndex] || mediaItems[0]);
+    } else {
+      alert("No 3D media added yet! Tap Admin to add photos.");
+    }
+  });
+}
 
 // ==========================================
 // 10. ADMIN STUDIO

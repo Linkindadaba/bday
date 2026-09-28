@@ -93,7 +93,8 @@ html {
 #wish-modal.active,
 #admin-modal.active,
 #media-inspect-modal.active,
-#snapshot-modal.active {
+#snapshot-modal.active,
+#milestones-modal.active {
   opacity: 1;
   pointer-events: auto;
 }
@@ -101,7 +102,8 @@ html {
 #wish-modal.active > div,
 #admin-modal.active > div,
 #media-inspect-modal.active > div,
-#snapshot-modal.active > div {
+#snapshot-modal.active > div,
+#milestones-modal.active > div {
   transform: scale(1);
 }
 
